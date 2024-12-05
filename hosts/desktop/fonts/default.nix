@@ -9,7 +9,7 @@
       noto-fonts
       noto-fonts-cjk-sans
       noto-fonts-emoji
-      nerdfonts
+      nerd-fonts
       twemoji-color-font
       fira-code
       fira-code-symbols

@@ -4,60 +4,77 @@
 
 { config, pkgs, lib, ... }:
 
+let
+  sddm-candy = pkgs.callPackage ./sources/sddm-candy.nix { };
+  sddm-corners = pkgs.callPackage ./sources/sddm-corners.nix { };
+in
 {
+
   imports =
     [ 
+    
     ./hardware-configuration.nix
-      ./hosts/desktop
-      ./home/home.nix
-    ];
+
+    ./themes/stylix/pinky.nix
+
+      # ./hosts/desktop
+      # ./packages
+ # ./home/home.nix 
+    # ./nvidia.nix
+    ./var.nix
+      ];
+
 
   # Bootloader.
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  boot = {
-   initrd = {
-    kernelModules = [ "nvidia"];
-   };
-    extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
-  };
+  boot.kernelPackages = pkgs.linuxPackages_zen;
+  # boot = {
+  #  initrd = {
+  #   kernelModules = [ "nvidia"];
+  #  };
+  #   extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+  # };
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
 hardware = {
-	#opengl = {
-	#	enable = true;
+	graphics = {
+		enable = true;
+		enable32Bit = true;
 	#	driSupport = true;
 	#	driSupport32Bit = true;
-	#};
+	};
 
 
-nvidia = {
-        modesetting.enable = true;
-        open = true;
-        nvidiaSettings = true;
-        package = config.boot.kernelPackages.nvidiaPackages.latest;
-        forceFullCompositionPipeline = true;
-        powerManagement.enable = true;
+# nvidia = {
+#         modesetting.enable = true;
+#         open = true;
+#         nvidiaSettings = true;
+#         package = config.boot.kernelPackages.nvidiaPackages.beta;
+#         forceFullCompositionPipeline = true;
+#         powerManagement.enable = true;
+# };
+# opengl.enable = true;
+#
+#
 };
 
+home-manager.users.jonwick = import ./home/home.nix;
 
-};
-  services.xserver.videoDrivers = ["nvidia"];
+  # services.xserver.videoDrivers = ["nvidia"];
 
-hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
+# hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
 
   security.rtkit.enable = true; # Enable RealtimeKit for audio purposes
 
   #sound.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-  };
+  # services.pipewire = {
+  #   enable = true;
+  #   alsa.enable = true;
+  #   alsa.support32Bit = true;
+  #   pulse.enable = true;
+  # };
 
   #
   # Bluetooth
@@ -79,6 +96,16 @@ hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
   # Enable networking
   networking.networkmanager.enable = true;
 
+  networking.networkmanager.wifi.backend = "iwd";
+  networking.wireless.iwd.enable = true;
+  networking.wireless.iwd.settings = {
+    IPv6 = {
+      Enabled = true;
+    };
+    Settings = {
+      AutoConnect = true;
+    };
+  };
   # Set your time zone.
   time.timeZone = "America/Los_Angeles";
 
@@ -98,13 +125,14 @@ hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
   };
 
   # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-    #videoDrivers = ["nvidia"];
-  };
+  # services.xserver.xkb = {
+  #   layout = "us";
+  #   variant = "";
+  #   #videoDrivers = ["nvidia"];
+  # };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
+  #
   users.users.jonwick = {
     isNormalUser = true;
     description = "Jon Wick";
@@ -115,9 +143,20 @@ hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
 
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
+    iwgtk
+
+    sddm-candy
+    sddm-corners
+    libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
+    libsForQt5.layer-shell-qt # for sddm theme wayland support
+    libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
+    libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
+    libsForQt5.qtsvg # for sddm theme svg icons
+    libsForQt5.qt5.qtwayland # wayland support for qt5
   #cli tools
 neovim
-zsh
+kanata
+# zsh
 tmux
 git
 #apps
@@ -130,23 +169,24 @@ teams-for-linux
 thunderbird
 gparted
 steam
+konsole
 # Hyprland and utils
 waybar
 yazi
 alsa-utils
 kdePackages.okular
 wl-clipboard
-hyprland-protocols
+#hyprland-protocols
 hyprland
 xdg-desktop-portal-hyprland
 xwayland
 wofi
-xdg-utils
-xdg-desktop-portal-gtk
+#xdg-utils
+#xdg-desktop-portal-gtk
 qt5.qtwayland
 qt6.qmake
 qt6.qtwayland
-xfce.thunar
+# xfce.thunar
 thefuck
 
 pipewire
@@ -162,6 +202,7 @@ pavucontrol
 libgcc
 gcc
 jdk
+ags
 #jdk22
 python3
   ];
@@ -177,7 +218,100 @@ python3
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-   services.openssh.enable = true;
+   # services.openssh.enable = true;
+  services = {
+
+    libinput.enable = true;
+    blueman.enable = true;
+    pipewire = {
+      enable = true;
+      alsa = {
+        enable = true;
+        support32Bit = true;
+      };
+      pulse.enable = true;
+      wireplumber.enable = true;
+    };
+
+    dbus.enable = true;
+    udisks2 = {
+      enable = true;
+      mountOnMedia = true;
+    };
+
+    openssh.enable = true;
+    
+    displayManager = {
+      sddm = {
+        enable = true;
+        wayland = {
+          enable = true;
+          compositor = "kwin";
+        };
+        package = pkgs.libsForQt5.sddm;
+        extraPackages = with pkgs; [
+        # sddm-sugar-dark
+          sddm-candy
+          sddm-corners
+          libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
+          libsForQt5.layer-shell-qt # for sddm theme wayland support
+          libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
+          libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
+          libsForQt5.qtsvg # for sddm theme svg icons
+          libsForQt5.qt5.qtwayland # wayland support for qt5
+          # bibata-cursors
+          # Bibata-Modern-Ice
+        ];
+        theme = "Candy";
+        settings = {
+          General = {
+            GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
+          };
+          Theme = {
+            ThemeDir = "/run/current-system/sw/share/sddm/themes";
+            CursorTheme = "bibata-cursors";
+          };
+        };
+      };
+      sessionPackages = [ pkgs.hyprland ];
+    };
+
+    upower.enable = true;
+  };
+
+  programs.dconf.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
+
+
+  services.kanata = {
+      enable = true;
+      keyboards = {
+          "misc".config = ''
+          
+(defsrc
+  caps
+)
+
+(defalias
+  escctrl  (tap-hold 100 100 esc lmet)
+
+)
+
+(deflayer base
+  @escctrl
+)
+          '';
+        };
+    };
+
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    backupFileExtension = "hm-backup";
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
