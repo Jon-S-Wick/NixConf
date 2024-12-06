@@ -56,7 +56,7 @@ nixvim = {
 
 
 
-  outputs = inputs@{ nixpkgs,nixvim, ... }: {
+  outputs = inputs@{ nixpkgs, ... }: {
 # outputs = { nixpkgs, home-manager, hyprland,  ... }@inputs:
   # let
   #   system = "x86_64-linux";
@@ -77,6 +77,7 @@ nixvim = {
                 [ inputs.hyprpanel.overlay inputs.nur.overlay ];
               _module.args = { inherit inputs; };
             }
+            # inputs.nixvim.homeManagerModules.nixvim
             inputs.home-manager.nixosModules.home-manager
             inputs.stylix.nixosModules.stylix
             inputs.pia.nixosModules."x86_64-linux".default

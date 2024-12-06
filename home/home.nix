@@ -1,6 +1,8 @@
-{   pkgs,config, ...}: {
+{   pkgs,config, inputs,...}: {
 
   imports = [
+
+     # inputs.nixvim.homeManagerModules.nixvim
 
   ../var.nix
   ./programs/kitty
@@ -80,7 +82,13 @@ hyprpolkitagent
   #   };
 
   # home.sessionVariables = import ./hm/home-env.nix;
-  programs.home-manager.enable = true;
+  # programs.home-manager.enable = true;
+  # home-manager = {
+  #   useGlobalPkgs = true;
+  #   useUserPackages = true;
+  #   backupFileExtension = "hm-backup";
+  #   extraSpecialArgs = { inherit inputs; };
+  # };
   home.stateVersion = "24.05";
 
   # system.stateVersion = "24.05"; # Did you read the comment?
