@@ -1,5 +1,4 @@
-{config,lib, ...}:
-{
+{ config, lib, ... }: {
 
   options = {
     var = lib.mkOption {
@@ -8,7 +7,7 @@
     };
   };
 
-config.var = {
+  config.var = {
 
     hostname = "jonwick";
     username = "jonwick";
@@ -24,6 +23,7 @@ config.var = {
     git = {
       username = "jonwick";
       email = "jonw3821@outlook.com";
+      core.autocrlf = "input";
     };
 
     autoUpgrade = false;
@@ -32,4 +32,4 @@ config.var = {
     # Choose your theme variables here
     theme = import ./themes/var/pinky.nix;
   };
-  }
+}

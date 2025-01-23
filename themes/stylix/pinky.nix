@@ -11,7 +11,7 @@
       base03 = "45475a"; # Comments, Invisibles, Line Highlighting
       base04 = "585b70"; # Dark Foreground (Used for status bars)
       base05 = "fcfcfc"; # Default Foreground, Caret, Delimiters, Operators
-      base06 = "e0f6dd"; # Light Foreground (Not often used)
+      base06 = "607ffe"; # Light Foreground (Not often used)
       base07 = "b4befe"; # Light Background (Not often used)
       base08 =
         "3c5a3c"; # Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
@@ -60,14 +60,15 @@
       };
     };
 
-    targets.nixvim.transparentBackground = {
-      main = true;
-      signColumn = true;
-    };
-    targets.nixvim.plugin = "base16-nvim";
-
-    polarity = "dark";
+    # targets.nixvim.transparentBackground = {
+    #   main = true;
+    #   signColumn = true;
+    # };
+    # targets.nixvim.plugin = "base16-nvim";
+    #   polarity = "dark";
     image = inputs.nixy-wallpapers + "/wallpapers/f.png";
+    # targets.kitty.enable = true;
   };
 
+  # targets.kitty.enable = true;
 }

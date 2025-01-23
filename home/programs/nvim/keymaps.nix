@@ -61,6 +61,18 @@
     };
 
     keymaps = [
+      #My additions
+      {
+        key = "<S-h>";
+        action = "<cmd>BufferLineCyclePrev<cr>";
+        options.desc = "Bufferline";
+      }
+
+      {
+        key = "<S-l>";
+        action = "<cmd>BufferLineCycleNext<cr>";
+        options.desc = "Bufferline";
+      }
       # General Mappings
       {
         key = "<leader>e";

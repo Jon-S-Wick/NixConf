@@ -1,53 +1,52 @@
-{   pkgs,config, inputs,...}: {
+{ lib, pkgs, config, inputs, ... }: {
 
   imports = [
 
-     # inputs.nixvim.homeManagerModules.nixvim
+    # inputs.nixvim.homeManagerModules.nixvim
 
-  ../var.nix
-  ./programs/kitty
-  ./programs/thunar
-  ./programs/yazi
-  ./programs/nvim
-  ./programs/shell
-  # ./programs/spicetify
-  
+    ../var.nix
+    ./programs/kitty
+    ./programs/thunar
+    ./programs/yazi
+    ./programs/nvim
+    ./programs/shell
+    # ./programs/spicetify
 
-  ./system/hypridle
-  ./system/hyprpanel
-  ./system/hyprland
-  ./system/wofi
-  ./system/hyprpaper
-  ./system/hyprlock
-  ./system/clipman
-  ./system/tofi
-  ./system/udiskie
-  
+    ./system/hypridle
+    ./system/hyprpanel
+    ./system/hyprland
+    ./system/wofi
+    ./system/hyprpaper
+    ./system/hyprlock
+    ./system/clipman
+    ./system/tofi
+    ./system/udiskie
 
+    ./scripts/default.nix
+    ./system/gtk
+    ./system/zathura
 
-
-  ./scripts/default.nix
-  ./system/gtk
-  ./system/zathura
-
-  
-   # hyprland.homeManagerModules.default
-  #  ./environment
+    ./home-file.nix
+    # hyprland.homeManagerModules.default
+    #  ./environment
     # ./programs
     # ./packages
- #   ./scripts
-#    ./themes
+    #   ./scripts
+    #    ./themes
   ];
 
-home = {
+  home = {
 
     inherit (config.var) username;
     homeDirectory = "/home/" + config.var.username;
-  packages = with pkgs;[
+    packages = with pkgs;
+      [
 
-hyprpolkitagent
-  ];
+        hyprpolkitagent
+      ];
   };
+
+  stylix.targets.kitty.enable = true;
 
   # inputs.nixvim = {
   #   url = "github:nix-community/nixvim";
@@ -57,15 +56,15 @@ hyprpolkitagent
   #   inputs.nixpkgs.follows = "nixpkgs";
   # };
   #
-  # programs.home-manager.enable = true;
+  programs.home-manager.enable = true;
 
   # homeModules = [];
-  # home = {
-  #     username = "jonwick";
-  #     homeDirectory = "/home/jonwick/";
-  #
-  #   };
-  #
+  home = {
+      username = "jonwick";
+      homeDirectory = "/home/jonwick/";
+
+    };
+
   # home.sessionVariables = import ./hm/home-env.nix {};
   # home.packages = import /
 

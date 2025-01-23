@@ -3,6 +3,10 @@
 
   programs.nixvim = {
     plugins = {
+      bufferline = {
+        enable = true;
+
+      };
       lualine = {
         enable = true;
         settings = {
@@ -13,7 +17,6 @@
           globalstatus = true;
           ignoreFocus = [ "neo-tree" ];
           extensions = [ "fzf" ];
-          theme = "auto";
           componentSeparators = {
             left = "|";
             right = "|";
@@ -44,7 +47,7 @@
       };
       trouble.enable = true;
       indent-blankline.enable = true;
-      nvim-colorizer.enable = true;
+      # nvim-colorizer.enable = true;
       tagbar = {
         enable = true;
         tagsPackage = pkgs.universal-ctags;

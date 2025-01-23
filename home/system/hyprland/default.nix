@@ -1,6 +1,6 @@
 # So best window tiling manager
 # { pkgs, config, inputs, ... }:
-{ pkgs, config,  ... }:
+{ pkgs, config, ... }:
 let
   border-size = config.var.theme.border-size;
   gaps-in = config.var.theme.gaps-in;
@@ -59,9 +59,10 @@ in {
       ];
 
       monitor = [
-"eDP-1,2560x1600@165.0,0x1080,1.0"
-"monitor=HDMI-A-1,1920x1080@60.0,0x0,1.0"
-"monitor=DP-2,1920x1080@60.0,1925x0,1.0"
+        "eDP-2,2560x1600@165.0,0x1080,1.3333333"
+        "HDMI-A-1,1920x1080@60.0,0x0,1.0"
+        "DP-3,1920x1080@60.0,1925x0,1.0 " # , transform, 3"
+
         # "eDP-2,highres,0x0,1"
         # "DP-7, disable"
         # "DP-8, disable"
@@ -71,12 +72,11 @@ in {
       ];
 
       env = [
-#My additions
+        #My additions
         # "LIBVA_DRIVER_NAME,nvidia"
         # "__GLX_VENDOR_LIBRARY_NAME,nvidia"
         # "ELECTRON_OZONE_PLATFORM_HINT,auto"
         # "WLR_DRM_DEVICES,/dev/dri/card0"
-
 
         "XDG_SESSION_TYPE,wayland"
         "XDG_CURRENT_DESKTOP,Hyprland"

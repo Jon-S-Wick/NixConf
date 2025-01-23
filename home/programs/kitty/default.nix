@@ -10,7 +10,10 @@
       "ctrl+shift+tab" = "send_text all \\x1b[27;6;9~";
       "alt+tab" = "send_text all \\x1b[27;3;9~";
     };
+    # themeFile = "Kanagawa";
     settings = {
+      shell = "tmux";
+
       scrollback_lines = 10000;
       initial_window_width = 1200;
       initial_window_height = 600;

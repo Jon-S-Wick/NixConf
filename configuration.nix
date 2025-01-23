@@ -2,77 +2,74 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib,inputs, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   sddm-candy = pkgs.callPackage ./sources/sddm-candy.nix { };
   sddm-corners = pkgs.callPackage ./sources/sddm-corners.nix { };
-in
-{
+in {
 
-  imports =
-    [ 
-    
+  imports = [
 
     ./hardware-configuration.nix
+    ./nixld.nix
 
-    ./home/home-manager.nix
+    # ./home/home-manager.nix
     ./themes/stylix/pinky.nix
+    # ./shell.nix
 
-      # ./hosts/desktop
-      # ./packages
- # ./home/home.nix 
+    # ./python.nix
+    # ./hosts/desktop
+    # ./packages
+    # ./home/home.nix 
     # ./nvidia.nix
     ./var.nix
-      ];
 
+    # ./devenv.nix
+  ];
 
   # Bootloader.
 
   boot.kernelPackages = pkgs.linuxPackages_zen;
-  # boot = {
-  #  initrd = {
-  #   kernelModules = [ "nvidia"];
-  #  };
-  #   extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
-  # };
+  boot = {
+    initrd = { kernelModules = [ "nvidia" ]; };
+    extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+  };
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  #
+  hardware = {
+   graphics = {
+      enable = true;
+      enable32Bit = true;
+      # driSupport = true;
+      # driSupport32Bit = true;
+    };
 
-hardware = {
-	graphics = {
-		enable = true;
-		enable32Bit = true;
-	#	driSupport = true;
-	#	driSupport32Bit = true;
-	};
+    nvidia = {
+      modesetting.enable = true;
+      open = true;
+      nvidiaSettings = true;
+      package = config.boot.kernelPackages.nvidiaPackages.beta;
+      # forceFullCompositionPipeline = true;
+     powerManagement.enable = true;
+      # prime = {
+      #   nvidiaBusId = "PCI:1:0:0";
+      #   amdgpuBusId = "PCI:101:0:0";
+      #
+      # };
+    };
+      # opengl.enable = true;
+      #
+      #
 
-
-# nvidia = {
-#         modesetting.enable = true;
-#         open = true;
-#         nvidiaSettings = true;
-#         package = config.boot.kernelPackages.nvidiaPackages.beta;
-#         forceFullCompositionPipeline = true;
-#         powerManagement.enable = true;
-# };
-# opengl.enable = true;
-#
-#
-};
-
-home-manager.users.jonwick = {
-  imports = [
-   ./home/home.nix
-   ];
   };
 
+  services.xserver.videoDrivers = [ "nvidia" ];
+  # home-manager.users.jonwick = { imports = [ ./home/home.nix ]; };
 
-
-  # services.xserver.videoDrivers = ["nvidia"];
-
-# hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
+  # hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
 
   security.rtkit.enable = true; # Enable RealtimeKit for audio purposes
 
@@ -92,6 +89,8 @@ home-manager.users.jonwick = {
     powerOnBoot = true;
   };
 
+  virtualisation.docker.enable = true;
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   networking.hostName = "nixos"; # Define your hostname.
@@ -103,17 +102,23 @@ home-manager.users.jonwick = {
 
   # Enable networking
   networking.networkmanager.enable = true;
-
-  networking.networkmanager.wifi.backend = "iwd";
   networking.wireless.iwd.enable = true;
-  networking.wireless.iwd.settings = {
-    IPv6 = {
-      Enabled = true;
-    };
-    Settings = {
-      AutoConnect = true;
-    };
-  };
+  # networking.networkmanager.dns = "none";
+  #   networking.useDHCP = false;
+  # networking.dhcpcd.enable = false;
+  #
+  # networking.networkmanager.wifi.powersave = true;
+
+  #
+  # networking.networkmanager.wifi.backend = "iwd";
+  # networking.wireless.iwd.enable = true;
+  # networking.wireless.iwd.settings = {
+  #   IPv6 = { Enabled = true; };
+  #   Settings = { AutoConnect = true; };
+  # };
+  # services.connman.wifi.backend = "iwd";
+  # services.gnome.gnome-keyring.enable = true;
+  #
   # Set your time zone.
   time.timeZone = "America/Los_Angeles";
 
@@ -145,12 +150,18 @@ home-manager.users.jonwick = {
     isNormalUser = true;
     description = "Jon Wick";
     extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [];
+    packages = with pkgs; [ ];
   };
-
 
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
+    openconnect
+
+    R
+    pipx
+    connman
+    nix-ld
+
     iwgtk
 
     sddm-candy
@@ -161,59 +172,119 @@ home-manager.users.jonwick = {
     libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
     libsForQt5.qtsvg # for sddm theme svg icons
     libsForQt5.qt5.qtwayland # wayland support for qt5
-  #cli tools
-neovim
-kanata
-# zsh
-tmux
-git
-#apps
-kitty
-discord
-vivaldi
-firefox
-obsidian
-teams-for-linux
-thunderbird
-gparted
-steam
-konsole
-# Hyprland and utils
-waybar
-yazi
-alsa-utils
-kdePackages.okular
-wl-clipboard
-#hyprland-protocols
-hyprland
-xdg-desktop-portal-hyprland
-xwayland
-wofi
-#xdg-utils
-#xdg-desktop-portal-gtk
-qt5.qtwayland
-qt6.qmake
-qt6.qtwayland
-# xfce.thunar
-thefuck
+    # libsForQt5.xwaylandvideobridge
+    #cli tools
+    neovim
+    kanata
+    # zsh
+    tmux
+    git
+    #apps
+    kitty
+    discord
+    vivaldi
+    firefox
+    obsidian
+    teams-for-linux
+    thunderbird
+    gparted
+    steam
+    konsole
+    # Hyprland and utils
+    waybar
+    yazi
+    alsa-utils
+    kdePackages.okular
+    kdePackages.systemsettings
+    wl-clipboard
+    #hyprland-protocols
+    hyprland
+    xdg-desktop-portal-hyprland
+    xdg-desktop-portal-gnome
+    xwayland
+    wofi
+    #xdg-utils
+    xdg-desktop-portal-gtk
+    qt5.qtwayland
+    qt6.qmake
+    qt6.qtwayland
+    # xfce.thunar
+    thefuck
 
-pipewire
-pulseaudio
+    pipewire
+    pulseaudio
 
-home-manager
+    home-manager
+    libreoffice
+    asusctl
 
-asusctl
+    pavucontrol
 
-pavucontrol
+    #Compilers
+    libgcc
+    gcc
+    jdk
+    ags
+    #jdk22
+    python3
+    # openssl
+    openssl_1_1
+    zstd
+    python312Packages.zstd
+    python313Packages.pybigwig
+    gnumake
 
-#Compilers
-libgcc
-gcc
-jdk
-ags
-#jdk22
-python3
+    gh
+
+    gtk4
+    gsettings-desktop-schemas
+
+    glib
+    glibc
+    boost
+    libxml2
+    libglibutil
+    samtools
+    wget
+    intltool
+    libpng
+    mariadb
+
+    connmanFull
+
+    # connman-gtk
+    networkmanagerapplet
+    networkmanager_dmenu
+    kdePackages.plasma-nm
+    kdePackages.networkmanager-qt
+
+    lshw
+    lshw-gui
+
+    conda
+    fish
+    zsh
+    perl
+    zlib
+
+    xorg.libSM
+    xorg.libICE
+    xorg.libXrender
+    libselinux
+
+    libxcrypt
+    # libxcrypt-legacy
   ];
+
+  environment.variables = {
+
+    LD_LIBRARY_PATH =
+      "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
+
+  };
+  nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1w" ];
+
+  virtualisation.vmware.host.enable = true;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -226,8 +297,9 @@ python3
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-   # services.openssh.enable = true;
+  # services.openssh.enable = true;
   services = {
+    # desktopManager.plasma6.enable = true;
 
     libinput.enable = true;
     blueman.enable = true;
@@ -248,7 +320,7 @@ python3
     };
 
     openssh.enable = true;
-    
+
     displayManager = {
       sddm = {
         enable = true;
@@ -256,70 +328,75 @@ python3
           enable = true;
           compositor = "kwin";
         };
-        package = pkgs.libsForQt5.sddm;
-        extraPackages = with pkgs; [
-        # sddm-sugar-dark
-          sddm-candy
-          sddm-corners
-          libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
-          libsForQt5.layer-shell-qt # for sddm theme wayland support
-          libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
-          libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
-          libsForQt5.qtsvg # for sddm theme svg icons
-          libsForQt5.qt5.qtwayland # wayland support for qt5
-          # bibata-cursors
-          # Bibata-Modern-Ice
-        ];
-        theme = "Candy";
-        settings = {
-          General = {
-            GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
-          };
-          Theme = {
-            ThemeDir = "/run/current-system/sw/share/sddm/themes";
-            CursorTheme = "bibata-cursors";
-          };
-        };
+        # package = pkgs.libsForQt5.sddm;
+        # extraPackages = with pkgs; [
+        #   # sddm-sugar-dark
+        #   sddm-candy
+        #   sddm-corners
+        #   libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
+        #   libsForQt5.layer-shell-qt # for sddm theme wayland support
+        #   libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
+        #   libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
+        #   libsForQt5.qtsvg # for sddm theme svg icons
+          # libsForQt5.qt5.qtwayland # wayland support for qt5
+        #   # bibata-cursors
+        #   # Bibata-Modern-Ice
+        # ];
+        # theme = "Candy";
+        # settings = {
+        #   General = {
+        #     GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
+        #   };
+        #   Theme = {
+        #     ThemeDir = "/run/current-system/sw/share/sddm/themes";
+        #     CursorTheme = "bibata-cursors";
+        #   };
+        # };
       };
       sessionPackages = [ pkgs.hyprland ];
     };
 
     upower.enable = true;
-  };
 
+  };
+  programs.nix-ld.enable = true;
   programs.dconf.enable = true;
+
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = true;
   };
 
-
   services.kanata = {
-      enable = true;
-      keyboards = {
-          "misc".config = ''
-          
-(defsrc
-  caps
-)
+    enable = true;
+    keyboards = {
+      "misc".config = ''
+                  
+        (defsrc
+          caps
+        )
 
-(defalias
-  escctrl  (tap-hold 100 100 esc lmet)
+        (defalias
+          escctrl  (tap-hold 100 100 esc lmet)
 
-)
+        )
 
-(deflayer base
-  @escctrl
-)
-          '';
-        };
+        (deflayer base
+          @escctrl
+        )
+      '';
     };
+  };
 
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
     backupFileExtension = "hm-backup";
   };
+
+  # programs.conda.package = pkgs.conda.override {
+  #   extraLibraries = pkgs:  ++ extraPackages;
+  # };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
