@@ -2,12 +2,19 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, inputs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 
 let
   sddm-candy = pkgs.callPackage ./sources/sddm-candy.nix { };
   sddm-corners = pkgs.callPackage ./sources/sddm-corners.nix { };
-in {
+in
+{
 
   imports = [
 
@@ -21,7 +28,7 @@ in {
     # ./python.nix
     # ./hosts/desktop
     # ./packages
-    # ./home/home.nix 
+    # ./home/home.nix
     # ./nvidia.nix
     ./var.nix
 
@@ -32,7 +39,9 @@ in {
 
   boot.kernelPackages = pkgs.linuxPackages_zen;
   boot = {
-    initrd = { kernelModules = [ "nvidia" ]; };
+    initrd = {
+      kernelModules = [ "nvidia" ];
+    };
     extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
   };
 
@@ -40,7 +49,7 @@ in {
   boot.loader.efi.canTouchEfiVariables = true;
   #
   hardware = {
-   graphics = {
+    graphics = {
       enable = true;
       enable32Bit = true;
       # driSupport = true;
@@ -53,20 +62,21 @@ in {
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.beta;
       # forceFullCompositionPipeline = true;
-     powerManagement.enable = true;
+      powerManagement.enable = true;
       # prime = {
       #   nvidiaBusId = "PCI:1:0:0";
       #   amdgpuBusId = "PCI:101:0:0";
       #
       # };
     };
-      # opengl.enable = true;
-      #
-      #
+    # opengl.enable = true;
+    #
+    #
 
   };
 
   services.xserver.videoDrivers = [ "nvidia" ];
+  systemd.network.wait-online.enable = false;
   # home-manager.users.jonwick = { imports = [ ./home/home.nix ]; };
 
   # hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
@@ -91,7 +101,10 @@ in {
 
   virtualisation.docker.enable = true;
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -149,18 +162,35 @@ in {
   users.users.jonwick = {
     isNormalUser = true;
     description = "Jon Wick";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      "docker"
+      "networkmanager"
+      "wheel"
+    ];
     packages = with pkgs; [ ];
   };
-
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-kde ];
+    configPackages = [ pkgs.gsettings-desktop-schemas ];
+  };
+  services.flatpak.enable = true;
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
-    openconnect
+    jdk23
+    java-language-server
+
+    flatpak
+    gradle_8
+    xdg-desktop-portal
+    xdg-desktop-portal-gtk
+    xdg-desktop-portal-kde
 
     R
     pipx
     connman
     nix-ld
+    distrobox
 
     iwgtk
 
@@ -175,6 +205,17 @@ in {
     # libsForQt5.xwaylandvideobridge
     #cli tools
     neovim
+    zip
+    android-tools
+    protonvpn-cli
+    protonvpn-gui
+    unzip
+    flutter
+    wine
+    steam-run
+    gnome-disk-utility
+
+    zig
     kanata
     # zsh
     tmux
@@ -278,8 +319,7 @@ in {
 
   environment.variables = {
 
-    LD_LIBRARY_PATH =
-      "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
+    LD_LIBRARY_PATH = "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
 
   };
   nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1w" ];
@@ -338,7 +378,7 @@ in {
         #   libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
         #   libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
         #   libsForQt5.qtsvg # for sddm theme svg icons
-          # libsForQt5.qt5.qtwayland # wayland support for qt5
+        # libsForQt5.qt5.qtwayland # wayland support for qt5
         #   # bibata-cursors
         #   # Bibata-Modern-Ice
         # ];
@@ -385,6 +425,22 @@ in {
           @escctrl
         )
       '';
+    };
+  };
+
+  systemd.services.kanata = {
+    description = "Kanata Keyboard Remapper";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "local-fs.target" ];
+    serviceConfig = {
+      ExecStart = "/path/to/kanata --cfg /path/to/config.kbd";
+      Restart = "always";
+      Type = "simple";
+      StandardOutput = "journal";
+      StandardError = "journal";
+      # Optional:
+      # Device access may cause delays
+      # consider adding UDev rules instead of directly accessing input
     };
   };
 

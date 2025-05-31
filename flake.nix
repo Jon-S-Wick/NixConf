@@ -8,7 +8,6 @@
   #   hyprland.url = "github:hyprwm/Hyprland";
   # };
 
-
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
@@ -21,7 +20,7 @@
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
     #
-nixvim = {
+    nixvim = {
       url = "github:nix-community/nixvim";
       # url = "/home/gaetan/perso/nix/nixvim/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -42,6 +41,7 @@ nixvim = {
       url = "github:anotherhadi/nixy-wallpapers";
       flake = false;
     };
+    openconnect-sso.url = "git+https://github.com/jcszymansk/openconnect-sso.git";
     hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
     hyprpolkitagent.url = "github:hyprwm/hyprpolkitagent";
     hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
@@ -54,80 +54,83 @@ nixvim = {
     nur.url = "github:nix-community/NUR";
   };
 
-
-
-  outputs = inputs@{ nixpkgs, ... }: {
-# outputs = { nixpkgs, home-manager, hyprland,  ... }@inputs:
-  # let
-  #   system = "x86_64-linux";
-  #   pkgs = import nixpkgs {
-  #     inherit system;
-  #     config = { allowUnfree = true; };
-  #   };
-  #   lib = nixpkgs.lib;
-  # in
-  #
-  # {
- nixosConfigurations = {
-      jonwick = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
+  outputs =
+    inputs@{ nixpkgs, openconnect-sso, ... }:
+    {
+      # outputs = { nixpkgs, home-manager, hyprland,  ... }@inputs:
+      # let
+      #   system = "x86_64-linux";
+      #   pkgs = import nixpkgs {
+      #     inherit system;
+      #     config = { allowUnfree = true; };
+      #   };
+      #   lib = nixpkgs.lib;
+      # in
+      #
+      # {
+      nixosConfigurations = {
+        jonwick = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
             {
-              nixpkgs.overlays =
-                [ inputs.hyprpanel.overlay inputs.nur.overlay ];
+              nixpkgs.overlays = [
+                inputs.hyprpanel.overlay
+                inputs.nur.overlay
+                # inputs.openconnect-sso.overlay
+              ];
               _module.args = { inherit inputs; };
             }
             # inputs.nixvim.homeManagerModules.nixvim
             inputs.home-manager.nixosModules.home-manager
             inputs.stylix.nixosModules.stylix
             inputs.pia.nixosModules."x86_64-linux".default
-          ./configuration.nix
-          # home-manager.nixosModules.home-manager
-          # {
-          #   home-manager.useGlobalPkgs = true;
-          #   home-manager.useUserPackages = true;
-          #   home-manager.users.jonwick = import ./home/home.nix;
+            ./configuration.nix
+            # home-manager.nixosModules.home-manager
+            # {
+            #   home-manager.useGlobalPkgs = true;
+            #   home-manager.useUserPackages = true;
+            #   home-manager.users.jonwick = import ./home/home.nix;
 
             # Optionally, use home-manager.extraSpecialArgs to pass
             # arguments to home.nix
-          # }
-        ];
+            # }
+          ];
+        };
       };
-    };
 
-	  #  nixosConfigurations = {
-	  #    jonwick = lib.nixosSystem {
-	  #      inherit system;
-	  #     specialArgs = { inherit inputs; }; # allows access to flake inputs in nixos modules
-	  #      modules = [
-	  #        ./configuration.nix
-	  #        # hyprland.homeManagerModules.default
-	  #        # {wayland.windowManager.hyprland.enable = true;}
-	  #        home-manager.nixosModules.home-manager
-	  #      ];
-	  #    };
-	  #
-	  # # Home Manager stuff
-	  #  homeManagerConfigurations = {
-	  #    hm = home-manager.lib.homeManagerConfiguration {
-	  #
-	  #      inherit system pkgs;
-	  #      username = "jonwick";
-	  #      homeDirectory = "/home/jonwick";
-	  #      configuration = {
-	  #        imports =[
-	  #          ];
-	  #        };
-	  #      };
-	  #    };
-	  #  };
-  };
+      #  nixosConfigurations = {
+      #    jonwick = lib.nixosSystem {
+      #      inherit system;
+      #     specialArgs = { inherit inputs; }; # allows access to flake inputs in nixos modules
+      #      modules = [
+      #        ./configuration.nix
+      #        # hyprland.homeManagerModules.default
+      #        # {wayland.windowManager.hyprland.enable = true;}
+      #        home-manager.nixosModules.home-manager
+      #      ];
+      #    };
+      #
+      # # Home Manager stuff
+      #  homeManagerConfigurations = {
+      #    hm = home-manager.lib.homeManagerConfiguration {
+      #
+      #      inherit system pkgs;
+      #      username = "jonwick";
+      #      homeDirectory = "/home/jonwick";
+      #      configuration = {
+      #        imports =[
+      #          ];
+      #        };
+      #      };
+      #    };
+      #  };
+    };
 }
-  # outputs = { self, nixpkgs }: {
-  #
-  #   packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-  #
-  #   packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
-  #
-  # };
+# outputs = { self, nixpkgs }: {
+#
+#   packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
+#
+#   packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
+#
+# };
 # }
