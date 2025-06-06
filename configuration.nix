@@ -167,11 +167,10 @@ in
       "networkmanager"
       "wheel"
     ];
-    packages = with pkgs; [ ];
   };
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-kde ];
+    extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
     configPackages = [ pkgs.gsettings-desktop-schemas ];
   };
   services.flatpak.enable = true;
@@ -182,11 +181,11 @@ in
 
     flatpak
     gradle_8
-    xdg-desktop-portal
-    xdg-desktop-portal-gtk
-    xdg-desktop-portal-kde
+    # xdg-desktop-portal
+    # xdg-desktop-portal-gtk
 
     R
+        chromium
     pipx
     connman
     nix-ld
@@ -230,7 +229,7 @@ in
     thunderbird
     gparted
     steam
-    konsole
+    # konsole
     # Hyprland and utils
     waybar
     yazi
@@ -240,12 +239,12 @@ in
     wl-clipboard
     #hyprland-protocols
     hyprland
-    xdg-desktop-portal-hyprland
-    xdg-desktop-portal-gnome
+    # xdg-desktop-portal-hyprland
+    # xdg-desktop-portal-gnome
     xwayland
     wofi
     #xdg-utils
-    xdg-desktop-portal-gtk
+    # xdg-desktop-portal-gtk
     qt5.qtwayland
     qt6.qmake
     qt6.qtwayland
@@ -324,7 +323,7 @@ in
   };
   nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1w" ];
 
-  virtualisation.vmware.host.enable = true;
+  # virtualisation.vmware.host.enable = true;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
