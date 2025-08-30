@@ -36,7 +36,6 @@ in
   ];
 
   # Bootloader.
-
   boot.kernelPackages = pkgs.linuxPackages_zen;
   boot = {
     initrd = {
@@ -62,12 +61,21 @@ in
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.beta;
       # forceFullCompositionPipeline = true;
-      powerManagement.enable = true;
-      # prime = {
-      #   nvidiaBusId = "PCI:1:0:0";
-      #   amdgpuBusId = "PCI:101:0:0";
-      #
-      # };
+      # powerManagement.enable = true;
+
+         powerManagement.finegrained = true;
+
+      dynamicBoost.enable = true; 
+
+
+      prime = {
+             offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
+       amdgpuBusId = "PCI:65:0:0";
+        nvidiaBusId = "PCI:1:0:0";
+      };
     };
     # opengl.enable = true;
     #
@@ -75,9 +83,6 @@ in
 
   };
 
-  services.xserver.videoDrivers = [ "nvidia" ];
-    services.teamviewer.enable = true;
-services.asusd.enable=true;
   systemd.network.wait-online.enable = false;
   # home-manager.users.jonwick = { imports = [ ./home/home.nix ]; };
 
@@ -270,7 +275,6 @@ services.asusd.enable=true;
     # xfce.thunar
     thefuck
 
-    pipewire
     pulseaudio
 
     home-manager
@@ -380,7 +384,13 @@ services.asusd.enable=true;
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
   services = {
-    # desktopManager.plasma6.enable = true;
+    desktopManager.plasma6.enable = true;
+    teamviewer.enable = true;
+      asusd.enable=true;
+      xserver = {
+         videoDrivers = [ "nvidia" ];
+
+      };   
 
     libinput.enable = true;
     blueman.enable = true;
@@ -393,6 +403,7 @@ services.asusd.enable=true;
       pulse.enable = true;
       wireplumber.enable = true;
         audio.enable = true;
+         # jack.enable = true;
     };
 
     dbus.enable = true;
@@ -436,20 +447,9 @@ services.asusd.enable=true;
         # };
       };
       sessionPackages = [ pkgs.hyprland ];
+
     };
-
-    upower.enable = true;
-
-  };
-  programs.nix-ld.enable = true;
-  programs.dconf.enable = true;
-
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
-
-  services.kanata = {
+  kanata = {
     enable = true;
     keyboards = {
       "misc".config = ''
@@ -469,6 +469,18 @@ services.asusd.enable=true;
       '';
     };
   };
+
+    upower.enable = true;
+
+  };
+  programs.nix-ld.enable = true;
+  programs.dconf.enable = true;
+
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
+
 
   systemd.services.kanata = {
     description = "Kanata Keyboard Remapper";
