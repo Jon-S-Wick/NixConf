@@ -94,6 +94,11 @@
     xorg.libxkbfile
     libGL
 
+      glfw-wayland
+
+      python313Packages.pyqt6
+      python313Packages.pyqt6-webengine
+
     # ...
   ];
 }

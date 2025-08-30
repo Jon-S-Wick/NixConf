@@ -76,10 +76,12 @@ in
   };
 
   services.xserver.videoDrivers = [ "nvidia" ];
+    services.teamviewer.enable = true;
+services.asusd.enable=true;
   systemd.network.wait-online.enable = false;
   # home-manager.users.jonwick = { imports = [ ./home/home.nix ]; };
 
-  # hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
+  hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
 
   security.rtkit.enable = true; # Enable RealtimeKit for audio purposes
 
@@ -176,6 +178,8 @@ in
   services.flatpak.enable = true;
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
+    rPackages.rtracklayer
+    rPackages.GenomicRanges
     jdk23
     java-language-server
 
@@ -192,6 +196,13 @@ in
     distrobox
 
     iwgtk
+        bun 
+        typescript 
+        typescript-language-server 
+        javascript-typescript-langserver
+        nodejs
+        htop
+
 
     sddm-candy
     sddm-corners
@@ -201,6 +212,10 @@ in
     libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
     libsForQt5.qtsvg # for sddm theme svg icons
     libsForQt5.qt5.qtwayland # wayland support for qt5
+
+      glfw-wayland
+      xcb-util-cursor
+      
     # libsForQt5.xwaylandvideobridge
     #cli tools
     neovim
@@ -217,6 +232,9 @@ in
     zig
     kanata
     # zsh
+    podman
+    brave
+    docker
     tmux
     git
     #apps
@@ -248,6 +266,7 @@ in
     qt5.qtwayland
     qt6.qmake
     qt6.qtwayland
+   # qt5
     # xfce.thunar
     thefuck
 
@@ -266,12 +285,35 @@ in
     jdk
     ags
     #jdk22
-    python3
+    python313
     # openssl
     openssl_1_1
     zstd
     python312Packages.zstd
     python313Packages.pybigwig
+      python313Packages.opencv-python
+      python313Packages.pyqt6
+      python313Packages.pyqt6-sip
+      python313Packages.pyqt6-charts
+      python313Packages.pyqt6-webengine
+      python313Packages.seaborn
+      python313Packages.requests
+      python313Packages.simpleaudio
+      python313Packages.tornado
+      python313Packages.types-beautifulsoup4
+      python313Packages.qrcode
+      python313Packages.pyinstaller
+
+      
+      qt6.full
+      xorg.libXcursor
+      xorg.libX11
+      xorg.libxcb
+      libGL
+      libxkbcommon
+      libdrm
+      libglvnd
+
     gnumake
 
     gh
@@ -350,6 +392,7 @@ in
       };
       pulse.enable = true;
       wireplumber.enable = true;
+        audio.enable = true;
     };
 
     dbus.enable = true;
