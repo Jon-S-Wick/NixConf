@@ -10,11 +10,8 @@
   ...
 }:
 
-let
-  sddm-candy = pkgs.callPackage ./sources/sddm-candy.nix { };
-  sddm-corners = pkgs.callPackage ./sources/sddm-corners.nix { };
-in
 {
+
 
   imports = [
 
@@ -41,11 +38,13 @@ in
     initrd = {
       kernelModules = [ "nvidia" ];
     };
-    extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+      kernelParams = [ "nvidia-drm.modeset=1" ];
+    # extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+  loader.systemd-boot.enable = true;
+  loader.efi.canTouchEfiVariables = true;
   };
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+
   #
   hardware = {
     graphics = {
@@ -61,21 +60,21 @@ in
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.beta;
       # forceFullCompositionPipeline = true;
-      # powerManagement.enable = true;
+      powerManagement.enable = true;
 
-         powerManagement.finegrained = true;
+         # powerManagement.finegrained = true;
 
-      dynamicBoost.enable = true; 
-
-
-      prime = {
-             offload = {
-          enable = true;
-          enableOffloadCmd = true;
-        };
-       amdgpuBusId = "PCI:65:0:0";
-        nvidiaBusId = "PCI:1:0:0";
-      };
+      # dynamicBoost.enable = true; 
+      #
+      #
+      # prime = {
+      #        offload = {
+      #     enable = true;
+      #     enableOffloadCmd = true;
+      #   };
+      #  amdgpuBusId = "PCI:65:0:0";
+      #   nvidiaBusId = "PCI:1:0:0";
+      # };
     };
     # opengl.enable = true;
     #
@@ -84,6 +83,28 @@ in
   };
 
   systemd.network.wait-online.enable = false;
+#    systemd.services."nvidia-resume" = {
+# description = "Reload NVIDIA modules after suspend";
+#     wantedBy = [ "suspend.target" ];
+#     after = [ "suspend.target" ];
+#
+#     serviceConfig = {
+#       Type = "oneshot";
+#       ExecStart = "${pkgs.bash}/bin/bash -c ''
+#         # Stop graphical target to release GPU
+#         systemctl isolate multi-user.target
+#
+#         # Try to unload NVIDIA modules
+#         modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia || true
+#
+#         # Reload NVIDIA modules with modeset
+#         modprobe nvidia_drm modeset=1 || true
+#
+#         # Start graphical target again
+#         systemctl isolate graphical.target
+#       ''";
+#     };
+#    };
   # home-manager.users.jonwick = { imports = [ ./home/home.nix ]; };
 
   hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
@@ -209,8 +230,8 @@ in
         htop
 
 
-    sddm-candy
-    sddm-corners
+      sddm-astronaut
+
     libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
     libsForQt5.layer-shell-qt # for sddm theme wayland support
     libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
@@ -388,7 +409,8 @@ in
     teamviewer.enable = true;
       asusd.enable=true;
       xserver = {
-         videoDrivers = [ "nvidia" ];
+         videoDrivers = [ "nvidia" "amdgpu" ];
+
 
       };   
 
@@ -421,30 +443,31 @@ in
           enable = true;
           compositor = "kwin";
         };
+            
+         theme = "sddm-astronaut";
         # package = pkgs.libsForQt5.sddm;
-        # extraPackages = with pkgs; [
-        #   # sddm-sugar-dark
-        #   sddm-candy
-        #   sddm-corners
+        extraPackages = with pkgs; [
+          # sddm-sugar-dark
+         sddm-astronaut
         #   libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
         #   libsForQt5.layer-shell-qt # for sddm theme wayland support
         #   libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
         #   libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
         #   libsForQt5.qtsvg # for sddm theme svg icons
         # libsForQt5.qt5.qtwayland # wayland support for qt5
-        #   # bibata-cursors
-        #   # Bibata-Modern-Ice
-        # ];
+          # bibata-cursors
+          # Bibata-Modern-Ice
+        ];
         # theme = "Candy";
-        # settings = {
-        #   General = {
-        #     GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
-        #   };
-        #   Theme = {
-        #     ThemeDir = "/run/current-system/sw/share/sddm/themes";
-        #     CursorTheme = "bibata-cursors";
-        #   };
-        # };
+        settings = {
+          General = {
+            GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
+          };
+          Theme = {
+            ThemeDir = "/run/current-system/sw/share/sddm/themes/sddm-astronaut-theme";
+            CursorTheme = "bibata-cursors";
+          };
+        };
       };
       sessionPackages = [ pkgs.hyprland ];
 

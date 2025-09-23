@@ -22,7 +22,7 @@
 
     git = {
       username = "jonwick";
-      email = "jonw3821@outlook.com";
+      email = "jwick9137@gmail.com";
       core.autocrlf = "input";
     };
 
