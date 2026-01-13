@@ -5,9 +5,8 @@
 
   # Sets up all the libraries to load
   programs.nix-ld.libraries = with pkgs; [
-    jdk23
+  cpplint
     jdt-language-server
-    jdk23
 
     openssl
     libxcrypt
@@ -33,8 +32,6 @@
     boost
     atk
     gdk-pixbuf
-    webkitgtk
-    libsoup
     gdk-pixbuf-xlib
     webp-pixbuf-loader
     xorg.libXrender
@@ -75,8 +72,6 @@
     cairo
     xorg.xhost
     libgtkflow3
-    webkitgtk
-    libsoup
     gdk-pixbuf
     shared-mime-info
     xorg.libXtst
@@ -94,7 +89,7 @@
     xorg.libxkbfile
     libGL
 
-      glfw-wayland
+      glfw
 
       python313Packages.pyqt6
       python313Packages.pyqt6-webengine

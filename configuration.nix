@@ -18,19 +18,10 @@
     ./hardware-configuration.nix
     ./nixld.nix
 
-    # ./home/home-manager.nix
     ./themes/stylix/pinky.nix
       ./services.nix
-    # ./shell.nix
-
-    # ./python.nix
-    # ./hosts/desktop
-    # ./packages
-    # ./home/home.nix
-    # ./nvidia.nix
     ./var.nix
 
-    # ./devenv.nix
   ];
 
   # Bootloader.
@@ -51,74 +42,42 @@
     graphics = {
       enable = true;
       enable32Bit = true;
+    
       # driSupport = true;
       # driSupport32Bit = true;
+
+    # extraPackages = with pkgs; [
+    #     vaapiVdpau
+    #     libvdpau-va-gl
+    #     nvidia-vaapi-driver
+    #   ];
     };
 
     nvidia = {
       modesetting.enable = true;
-      open = true;
+      open = false;
       nvidiaSettings = true;
-      package = config.boot.kernelPackages.nvidiaPackages.beta;
-      # forceFullCompositionPipeline = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
       powerManagement.enable = true;
 
-         # powerManagement.finegrained = true;
-
       dynamicBoost.enable = true; 
-      #
-      #
-      prime = {
-             offload = {
-          enable = true;
-          enableOffloadCmd = true;
-        };
-       amdgpuBusId = "PCI:65:0:0";
-       nvidiaBusId = "PCI:1:0:0";
-      };
     };
-    # opengl.enable = true;
-    #
-    #
 
   };
 
   systemd.network.wait-online.enable = false;
-#    systemd.services."nvidia-resume" = {
-# description = "Reload NVIDIA modules after suspend";
-#     wantedBy = [ "suspend.target" ];
-#     after = [ "suspend.target" ];
-#
-#     serviceConfig = {
-#       Type = "oneshot";
-#       ExecStart = "${pkgs.bash}/bin/bash -c ''
-#         # Stop graphical target to release GPU
-#         systemctl isolate multi-user.target
-#
-#         # Try to unload NVIDIA modules
-#         modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia || true
-#
-#         # Reload NVIDIA modules with modeset
-#         modprobe nvidia_drm modeset=1 || true
-#
-#         # Start graphical target again
-#         systemctl isolate graphical.target
-#       ''";
-#     };
-#    };
-  # home-manager.users.jonwick = { imports = [ ./home/home.nix ]; };
 
   hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
 
   security.rtkit.enable = true; # Enable RealtimeKit for audio purposes
 
   #sound.enable = true;
-  # services.pipewire = {
-  #   enable = true;
-  #   alsa.enable = true;
-  #   alsa.support32Bit = true;
-  #   pulse.enable = true;
-  # };
+  services.pipewire = {
+    enable = true;
+    # alsa.enable = true;
+    # alsa.support32Bit = true;
+    pulse.enable = true;
+  };
 
   #
   # Bluetooth
@@ -199,21 +158,31 @@
   };
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
+    wlr.enable=true;
+    config = {
+        common.default = ["gtk"];
+        hyprland.default = ["gtk" "hyprland"];
+        };
+
+
+    extraPortals = [ 
+            pkgs.kdePackages.xdg-desktop-portal-kde 
+            pkgs.xdg-desktop-portal-hyprland
+            pkgs.xdg-desktop-portal
+            pkgs.xdg-desktop-portal-gtk
+        ];
     configPackages = [ pkgs.gsettings-desktop-schemas ];
   };
-  services.flatpak.enable = true;
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
     rPackages.rtracklayer
     rPackages.GenomicRanges
-    jdk23
     java-language-server
 
     flatpak
     gradle_8
-    # xdg-desktop-portal
-    # xdg-desktop-portal-gtk
+    xdg-desktop-portal
+    xdg-desktop-portal-hyprland
 
     R
         chromium
@@ -221,34 +190,19 @@
     connman
     nix-ld
     distrobox
-
     iwgtk
-        bun 
-        typescript 
-        typescript-language-server 
-        javascript-typescript-langserver
-        nodejs
-        htop
-
-
-      sddm-astronaut
-
-    libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
-    libsForQt5.layer-shell-qt # for sddm theme wayland support
-    libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
-    libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
-    libsForQt5.qtsvg # for sddm theme svg icons
-    libsForQt5.qt5.qtwayland # wayland support for qt5
-
-      glfw-wayland
-      xcb-util-cursor
-      
-    # libsForQt5.xwaylandvideobridge
-    #cli tools
+    bun 
+    typescript 
+    typescript-language-server 
+    javascript-typescript-langserver
+    nodejs
+    htop
+    sddm-astronaut
+   glfw
+   xcb-util-cursor
     neovim
     zip
     android-tools
-    protonvpn-cli
     protonvpn-gui
     unzip
     flutter
@@ -258,7 +212,28 @@
 
     zig
     kanata
-    # zsh
+    python313Packages.pyqt6
+    kdePackages.qt5compat
+
+    qt6.qtbase
+      qt6.qtwayland
+  libxcb
+  xorg.libXcursor
+  xorg.libXrandr
+  xorg.libXinerama
+    egl-wayland
+    onlyoffice-desktopeditors
+    lutris
+    rar
+    matlab-language-server 
+        
+        openvpn
+        valgrind
+      vlc
+      blast
+      gdb
+      cpplint
+      powertop
     podman
     brave
     docker
@@ -280,14 +255,16 @@
     kdePackages.okular
     kdePackages.systemsettings
     wl-clipboard
-    hyprland
+hyprland
     xwayland
     wofi
     qt5.qtwayland
     qt6.qmake
     qt6.qtwayland
-    thefuck
+    pay-respects
     pulseaudio
+        pulsemixer
+
     home-manager
     libreoffice
     asusctl
@@ -302,10 +279,10 @@
     python312Packages.zstd
     python313Packages.pybigwig
       python313Packages.opencv-python
-      python313Packages.pyqt6
-      python313Packages.pyqt6-sip
-      python313Packages.pyqt6-charts
-      python313Packages.pyqt6-webengine
+      # python313Packages.pyqt6
+      # python313Packages.pyqt6-sip
+      # python313Packages.pyqt6-charts
+      # python313Packages.pyqt6-webengine
       python313Packages.seaborn
       python313Packages.requests
       python313Packages.simpleaudio
@@ -315,7 +292,7 @@
       python313Packages.pyinstaller
 
       
-      qt6.full
+      # qt6.full
       xorg.libXcursor
       xorg.libX11
       xorg.libxcb
@@ -365,16 +342,29 @@
     xorg.libICE
     xorg.libXrender
     libselinux
+   man-pages 
+      man-pages-posix 
 
     libxcrypt
     # libxcrypt-legacy
   ];
 
-  environment.variables = {
+  environment = {
 
-    LD_LIBRARY_PATH = "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
+    variables = {
 
+        LD_LIBRARY_PATH = "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
+        };
+
+sessionVariables = {
+      MOZ_ENABLE_WAYLAND = "1";
+      NIXOS_OZONE_WL = "1";
+      T_QPA_PLATFORM = "wayland";
+      GDK_BACKEND = "wayland";
+      WLR_NO_HARDWARE_CURSORS = "1";
+    };
   };
+
   nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1w" ];
 
   # virtualisation.vmware.host.enable = true;
@@ -391,8 +381,9 @@
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
-  programs.nix-ld.enable = true;
   programs.dconf.enable = true;
+    programs.xwayland.enable = true;
+    programs.hyprland.xwayland.enable = true;
 
   programs.gnupg.agent = {
     enable = true;
@@ -400,12 +391,16 @@
   };
 
 
-  systemd.services.kanata = {
+
+
+
+  systemd.services = {
+      kanata = {
     description = "Kanata Keyboard Remapper";
     wantedBy = [ "multi-user.target" ];
     after = [ "local-fs.target" ];
     serviceConfig = {
-      ExecStart = "/path/to/kanata --cfg /path/to/config.kbd";
+      ExecStart = "${pkgs.kanata} --cfg /home/jonwick/.k";
       Restart = "always";
       Type = "simple";
       StandardOutput = "journal";
@@ -415,6 +410,54 @@
       # consider adding UDev rules instead of directly accessing input
     };
   };
+    # armory-crate = {
+    #         description = "Asus crate on startup";
+    #
+    #   wantedBy = [ "multi-user.target" ];
+    #   after = [ "local-fs.target" ];
+    #   serviceConfig = {
+    #     ExecStart = "${pkgs.rog}";
+    #     Restart = "always";
+    #     Type = "simple";
+    #     StandardOutput = "journal";
+    #     StandardError = "journal";
+    #     # Optional:
+    #     # Device access may cause delays
+    #     # consider adding UDev rules instead of directly accessing input
+    #   };
+    # };
+    #
+    #   thunderbird = {
+    #      description = "Thunderbird background init";
+    #      script = "thunderbird --headless";
+    # after = [ "local-fs.target" ];
+    # serviceConfig = {
+    #   Restart = "always";
+    #   Type = "simple";
+    #   StandardOutput = "journal";
+    #   StandardError = "journal";
+    #   # Optional:
+    #   # Device access may cause delays
+    #   # consider adding UDev rules instead of directly accessing input
+    # };
+    #   };
+    #   teams = {
+    #      description = "Teams headless";
+    #      script = "teams-for-linux --minimized true  ";
+    # after = [ "local-fs.target" ];
+    # serviceConfig = {
+    #   Restart = "always";
+    #   Type = "simple";
+    #   StandardOutput = "journal";
+    #   StandardError = "journal";
+    #   # Optional:
+    #   # Device access may cause delays
+    #   # consider adding UDev rules instead of directly accessing input
+    # };
+
+      # };
+   };
+
 
   home-manager = {
     useGlobalPkgs = true;

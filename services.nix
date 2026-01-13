@@ -49,7 +49,6 @@
           compositor = "kwin";
         };
             
-         theme = "sddm-astronaut";
         # package = pkgs.libsForQt5.sddm;
         extraPackages = with pkgs; [
           # sddm-sugar-dark
@@ -63,6 +62,7 @@
           # bibata-cursors
           # Bibata-Modern-Ice
         ];
+         theme = "sddm-astronaut";
         # theme = "Candy";
         settings = {
           General = {
