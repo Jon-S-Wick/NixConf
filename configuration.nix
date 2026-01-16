@@ -36,6 +36,11 @@
   loader.efi.canTouchEfiVariables = true;
   };
 
+     swapDevices = [ {
+    device = "/var/lib/swapfile";
+    size = 32*1024;
+  } ];
+
 
   #
   hardware = {
@@ -464,6 +469,7 @@ sessionVariables = {
     useUserPackages = true;
     backupFileExtension = "hm-backup";
   };
+  # home-manager.users.jonwick = inputs.customHome.homeConfigurations."jonwick";
 
   # programs.conda.package = pkgs.conda.override {
   #   extraLibraries = pkgs:  ++ extraPackages;

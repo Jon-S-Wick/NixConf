@@ -42,6 +42,7 @@
       url = "github:anotherhadi/nixy-wallpapers";
       flake = false;
     };
+    # customHome.url = "git+https://github.com/Jon-S-Wick/home-manager.git";
     openconnect-sso.url = "git+https://github.com/jcszymansk/openconnect-sso.git";
     hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
     hyprpolkitagent.url = "github:hyprwm/hyprpolkitagent";
@@ -76,7 +77,7 @@
             {
               nixpkgs.overlays = [
                 inputs.hyprpanel.overlay
-                inputs.nur.overlay
+                # inputs.nur.overlay
                 # inputs.openconnect-sso.overlay
               ];
               _module.args = { inherit inputs; };
@@ -90,7 +91,7 @@
             # {
             #   home-manager.useGlobalPkgs = true;
             #   home-manager.useUserPackages = true;
-            #   home-manager.users.jonwick = import ./home/home.nix;
+              # inputs.home-manager.users.jonwick = customHome.homeManagerModules
 
             # Optionally, use home-manager.extraSpecialArgs to pass
             # arguments to home.nix
