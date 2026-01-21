@@ -17,6 +17,7 @@
         pkgs.teams-for-linux
         pkgs.asusctl
         pkgs.supergfxctl
+        pkgs.gh
     # pkgs.vscode - hydenix's vscode version
     # pkgs.userPkgs.vscode - your personal nixpkgs version
   ];

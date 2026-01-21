@@ -47,33 +47,33 @@
     openssh.enable = true;
 
     displayManager = {
-      sddm = {
-        enable = true;
-        wayland = {
-          enable = false;
-          # compositor = "kwin";
-        };
-            
-        # package = pkgs.libsForQt5.sddm;
-        extraPackages = with pkgs; [
-        kdePackages.sddm
-                    kdePackages.qtmultimedia
-                    kdePackages.sddm-kcm
-                    kdePackages.sddm
-
-         sddm-astronaut
-        ];
-         theme = "sddm-astronaut-theme";
-        # theme = "Candy";
-        # settings = {
-        #   General = {
-        #     GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
-        #   };
-        #   Theme = {
-        #     CursorTheme = "bibata-cursors";
-        #   };
-        # };
-      };
+      # sddm = {
+      #   enable = true;
+      #   wayland = {
+      #     enable = false;
+      #     # compositor = "kwin";
+      #   };
+      #       
+      #   # package = pkgs.libsForQt5.sddm;
+      #   extraPackages = with pkgs; [
+      #   kdePackages.sddm
+      #               kdePackages.qtmultimedia
+      #               kdePackages.sddm-kcm
+      #               kdePackages.sddm
+      #
+      #    sddm-astronaut
+      #   ];
+      #    theme = "sddm-astronaut-theme";
+      #   # theme = "Candy";
+      #   # settings = {
+      #   #   General = {
+      #   #     GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
+      #   #   };
+      #   #   Theme = {
+      #   #     CursorTheme = "bibata-cursors";
+      #   #   };
+      #   # };
+      # };
       sessionPackages = [ pkgs.hyprland ];
 
     };
