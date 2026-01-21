@@ -91,8 +91,8 @@
 
       glfw
 
-      python313Packages.pyqt6
-      python313Packages.pyqt6-webengine
+      # python313Packages.pyqt6
+      # python313Packages.pyqt6-webengine
 
     # ...
   ];
