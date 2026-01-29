@@ -12,7 +12,6 @@
 
 {
 
-
   imports = [
     inputs.hydenix.inputs.home-manager.nixosModules.home-manager
     inputs.hydenix.nixosModules.default
@@ -22,55 +21,85 @@
 
     inputs.nixos-hardware.nixosModules.common-pc-laptop # Laptops
     inputs.nixos-hardware.nixosModules.common-pc-ssd # SSD storage
+    inputs.minegrub-theme.nixosModules.default
 
     ./hardware-configuration.nix
     # ./nixld.nix
 
     # ./themes/stylix/pinky.nix
-      ./services.nix
+    ./services.nix
+    ./pkgs.nix
     # ./var.nix
 
   ];
-
   # Bootloader.
   boot = {
-  #       consoleLogLevel = 3;
-  #       
-  #   kernelPackages = pkgs.linuxPackages_zen;
-  #   initrd = {
-  #     kernelModules = [ "nvidia" ];
-  #   };
-      kernelParams = [ 
-            "nvidia-drm.modeset=1"
-            "quiet"
-            "splash"
-            "boot.shell_on_fail"
-        ];
-  #   # extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
-  # loader.systemd-boot.enable = true;
-  # loader.efi.canTouchEfiVariables = true;
-    plymouth = {
+    loader = {
+      systemd-boot.enable = false;
+      efi = {
+        canTouchEfiVariables = true;
+        efiSysMountPoint = "/boot/efi"; # ← use the same mount point here.
+
+      };
+      grub = {
         enable = true;
-        theme = "lone";
-        themePackages = with pkgs; [
-            # By default we would install all themes
-            (adi1090x-plymouth-themes.override {
-              selected_themes = [ "lone" ];
-            })
-        ];
+        efiSupport = true;
+        device = "nodev";
+        useOSProber = true;
+
+        # copyKernels = false;
+        # device = "/dev/nvme0n1p1";
+
+        minegrub-theme = {
+          enable = true;
+          splash = "100% Flakes!";
+          background = "background_options/1.8  - [Classic Minecraft].png";
+          boot-options-count = 4;
+        };
+      };
+    };
+    #       consoleLogLevel = 3;
+    #
+    #   kernelPackages = pkgs.linuxPackages_zen;
+    #   initrd = {
+    #     kernelModules = [ "nvidia" ];
+    #   };
+    kernelParams = [
+      "nvidia-drm.modeset=1"
+      "quiet"
+      "splash"
+      "boot.shell_on_fail"
+      "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+      "nvidia.NVreg_TemporaryFilePath=/var/tmp"
+      "rd.systemd.show_status=false"
+      "rd.udev.log_level=3"
+      "vt.global_cursor_default=0"
+    ];
+    #   # extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+    # loader.systemd-boot.enable = true;
+    # loader.efi.canTouchEfiVariables = true;
+    plymouth = {
+      enable = true;
+      theme = "lone";
+      themePackages = with pkgs; [
+        # By default we would install all themes
+        (adi1090x-plymouth-themes.override {
+          selected_themes = [ "lone" ];
+        })
+      ];
     };
   };
 
-#  swapDevices = [ {
-#     device = "/var/lib/swapfile";
-#     size = 32*1024;
-#   } ];
-# zramSwap = {
-#   enable = true;
-#   algorithm = "lz4"; # You can choose other algorithms like zstd if preferred
-#   memoryPercent = 10; # Adjust this based on your RAM size
-# };
-#
+  #  swapDevices = [ {
+  #     device = "/var/lib/swapfile";
+  #     size = 32*1024;
+  #   } ];
+  # zramSwap = {
+  #   enable = true;
+  #   algorithm = "lz4"; # You can choose other algorithms like zstd if preferred
+  #   memoryPercent = 10; # Adjust this based on your RAM size
+  # };
+  #
   hardware = {
     graphics = {
       enable = true;
@@ -82,18 +111,22 @@
       nvidiaSettings = true;
       # package = config.boot.kernelPackages.nvidiaPackages.stable;
       powerManagement.enable = true;
+      # powerManagement.finegrained = true;
 
-      dynamicBoost.enable = true; 
+      dynamicBoost.enable = true;
     };
-      bluetooth = {
-        enable = true;
-        powerOnBoot = true;
-      };
+    bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
   };
-#
+  #
 
+  security = {
+    rtkit.enable = true; # Enable RealtimeKit for audio purposes
+    polkit.enable = true;
 
-  security.rtkit.enable = true; # Enable RealtimeKit for audio purposes
+  };
 
   #sound.enable = true;
 
@@ -108,7 +141,16 @@
     "flakes"
   ];
 
-   networking.hostName = lib.mkForce "nixos"; # Define your hostname.
+  networking = {
+    hostName = lib.mkForce "nixos"; # Define your hostname.
+    networkmanager = {
+      enable = true;
+      plugins = with pkgs; [
+        networkmanager-openconnect
+      ];
+
+    };
+  };
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -170,226 +212,40 @@
       "wheel"
     ];
   };
-#   xdg.portal = {
-#     enable = true;
-#     wlr.enable=true;
-#     config = {
-#         common.default = ["gtk"];
-#         hyprland.default = ["gtk" "hyprland"];
-#         };
-#
-#
-#     extraPortals = [ 
-#             pkgs.kdePackages.xdg-desktop-portal-kde 
-#             pkgs.xdg-desktop-portal-hyprland
-#             pkgs.xdg-desktop-portal
-#             pkgs.xdg-desktop-portal-gtk
-#         ];
-#     configPackages = [ pkgs.gsettings-desktop-schemas ];
-#   };
-#   # nixpkgs.config.allowUnfree = true;
-#   environment.systemPackages = with pkgs; [
-#     rPackages.rtracklayer
-#     rPackages.GenomicRanges
-#     java-language-server
-#
-#     flatpak
-#     gradle_8
-#     xdg-desktop-portal
-#     xdg-desktop-portal-hyprland
-#
-#     R
-#         chromium
-#     pipx
-#     connman
-#     nix-ld
-#     distrobox
-#     iwgtk
-#     bun 
-#     typescript 
-#     typescript-language-server 
-#     javascript-typescript-langserver
-#     nodejs
-#     htop
-#     sddm-astronaut
-#         kdePackages.kirigami
-#         kdePackages.sddm
-#           kdePackages.knewstuff
-#
-#         sddm-sugar-dark
-#         kdePackages.sddm-kcm
-# kdePackages.sddm
-#    glfw
-#    xcb-util-cursor
-#     neovim
-#     zip
-#     android-tools
-#     protonvpn-gui
-#     unzip
-#     flutter
-#     wine
-#     steam-run
-#     gnome-disk-utility
-#
-#     zig
-#     kanata
-#     python313Packages.pyqt6
-#     kdePackages.qt5compat
-#         # kdePackages.qt6ct
-#         libsForQt5.qt5ct
-#         libsForQt5.qt5.qtsvg
-#
-#     qt6.qtbase
-#       qt6.qtwayland
-#   qt6.qtsvg
-#   libxcb
-#   xorg.libXcursor
-#   xorg.libXrandr
-#   xorg.libXinerama
-#     egl-wayland
-#     onlyoffice-desktopeditors
-#     lutris
-#     rar
-#     matlab-language-server 
-#
-#         openvpn
-#         valgrind
-#       vlc
-#       blast
-#       gdb
-#       cpplint
-#       powertop
-#     podman
-#     brave
-#     docker
-#     tmux
-#     git
-#     #apps
-#     kitty
-#     discord
-#     vivaldi
-#     firefox
-#     obsidian
-#     teams-for-linux
-#     thunderbird
-#     gparted
-#     steam
-#     waybar
-#     yazi
-#     alsa-utils
-#     kdePackages.okular
-#     kdePackages.systemsettings
-#     wl-clipboard
-# hyprland
-#     xwayland
-#     wofi
-#     # qt5.qtwayland
-#     #     kdePackages.qtmultimedia
-#     # qt6.qmake
-#     # qt6.qtwayland
-#     pay-respects
-#     pulseaudio
-#         pulsemixer
-#
-#     # home-manager
-#     libreoffice
-#     asusctl
-#     pavucontrol
-#     libgcc
-#     gcc
-#     jdk
-#     ags
-#     python313
-#     # openssl_1_1
-#     zstd
-#     python312Packages.zstd
-#     python313Packages.pybigwig
-#       python313Packages.opencv-python
-#       # python313Packages.pyqt6
-#       # python313Packages.pyqt6-sip
-#       # python313Packages.pyqt6-charts
-#       # python313Packages.pyqt6-webengine
-#       python313Packages.seaborn
-#       python313Packages.requests
-#       python313Packages.simpleaudio
-#       python313Packages.tornado
-#       python313Packages.types-beautifulsoup4
-#       python313Packages.qrcode
-#       python313Packages.pyinstaller
-#
-#
-#       # qt6.full
-#       xorg.libXcursor
-#       xorg.libX11
-#       xorg.libxcb
-#       libGL
-#       libxkbcommon
-#       libdrm
-#       libglvnd
-#
-#     gnumake
-#
-#     gh
-#
-#     gtk4
-#     gsettings-desktop-schemas
-#
-#     glib
-#     glibc
-#     boost
-#     libxml2
-#     libglibutil
-#     samtools
-#     wget
-#     intltool
-#     libpng
-#     mariadb
-#
-#     connmanFull
-#
-#     # connman-gtk
-#     networkmanagerapplet
-#     networkmanager_dmenu
-#     kdePackages.plasma-nm
-#     kdePackages.networkmanager-qt
-#
-#     lshw
-#     lshw-gui
-#
-#     conda
-#    gimp
-#       nvtopPackages.nvidia
-#     fish
-#     zsh
-#     perl
-#     zlib
-#
-#     xorg.libSM
-#     xorg.libICE
-#     xorg.libXrender
-#     libselinux
-#    man-pages 
-#       man-pages-posix 
-#
-#     libxcrypt
-#     # libxcrypt-legacy
-#   ];
-#
-#   environment = {
-#
-#     variables = {
-#
-#         LD_LIBRARY_PATH = "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
-#         };
+  #   xdg.portal = {
+  #     enable = true;
+  #     wlr.enable=true;
+  #     config = {
+  #         common.default = ["gtk"];
+  #         hyprland.default = ["gtk" "hyprland"];
+  #         };
+  #
+  #
+  #     extraPortals = [
+  #             pkgs.kdePackages.xdg-desktop-portal-kde
+  #             pkgs.xdg-desktop-portal-hyprland
+  #             pkgs.xdg-desktop-portal
+  #             pkgs.xdg-desktop-portal-gtk
+  #         ];
+  #     configPackages = [ pkgs.gsettings-desktop-schemas ];
+  #   };
+  #   # nixpkgs.config.allowUnfree = true;
+  #
+  #   environment = {
+  #
+  #     variables = {
+  #
+  #         LD_LIBRARY_PATH = "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
+  #         };
 
-# sessionVariables = {
-#       MOZ_ENABLE_WAYLAND = "1";
-#       NIXOS_OZONE_WL = "1";
-#       T_QPA_PLATFORM = "wayland";
-#       GDK_BACKEND = "wayland";
-#       WLR_NO_HARDWARE_CURSORS = "1";
-#     };
-#   };
+  # sessionVariables = {
+  #       MOZ_ENABLE_WAYLAND = "1";
+  #       NIXOS_OZONE_WL = "1";
+  #       T_QPA_PLATFORM = "wayland";
+  #       GDK_BACKEND = "wayland";
+  #       WLR_NO_HARDWARE_CURSORS = "1";
+  #     };
+  #   };
 
   # nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1w" ];
 
@@ -438,54 +294,53 @@
   #       };
   #     };
   #   };
-    # armory-crate = {
-    #         description = "Asus crate on startup";
-    #
-    #   wantedBy = [ "multi-user.target" ];
-    #   after = [ "local-fs.target" ];
-    #   serviceConfig = {
-    #     ExecStart = "${pkgs.rog}";
-    #     Restart = "always";
-    #     Type = "simple";
-    #     StandardOutput = "journal";
-    #     StandardError = "journal";
-    #     # Optional:
-    #     # Device access may cause delays
-    #     # consider adding UDev rules instead of directly accessing input
-    #   };
-    # };
-    #
-    #   thunderbird = {
-    #      description = "Thunderbird background init";
-    #      script = "thunderbird --headless";
-    # after = [ "local-fs.target" ];
-    # serviceConfig = {
-    #   Restart = "always";
-    #   Type = "simple";
-    #   StandardOutput = "journal";
-    #   StandardError = "journal";
-    #   # Optional:
-    #   # Device access may cause delays
-    #   # consider adding UDev rules instead of directly accessing input
-    # };
-    #   };
-    #   teams = {
-    #      description = "Teams headless";
-    #      script = "teams-for-linux --minimized true  ";
-    # after = [ "local-fs.target" ];
-    # serviceConfig = {
-    #   Restart = "always";
-    #   Type = "simple";
-    #   StandardOutput = "journal";
-    #   StandardError = "journal";
-    #   # Optional:
-    #   # Device access may cause delays
-    #   # consider adding UDev rules instead of directly accessing input
-    # };
+  # armory-crate = {
+  #         description = "Asus crate on startup";
+  #
+  #   wantedBy = [ "multi-user.target" ];
+  #   after = [ "local-fs.target" ];
+  #   serviceConfig = {
+  #     ExecStart = "${pkgs.rog}";
+  #     Restart = "always";
+  #     Type = "simple";
+  #     StandardOutput = "journal";
+  #     StandardError = "journal";
+  #     # Optional:
+  #     # Device access may cause delays
+  #     # consider adding UDev rules instead of directly accessing input
+  #   };
+  # };
+  #
+  #   thunderbird = {
+  #      description = "Thunderbird background init";
+  #      script = "thunderbird --headless";
+  # after = [ "local-fs.target" ];
+  # serviceConfig = {
+  #   Restart = "always";
+  #   Type = "simple";
+  #   StandardOutput = "journal";
+  #   StandardError = "journal";
+  #   # Optional:
+  #   # Device access may cause delays
+  #   # consider adding UDev rules instead of directly accessing input
+  # };
+  #   };
+  #   teams = {
+  #      description = "Teams headless";
+  #      script = "teams-for-linux --minimized true  ";
+  # after = [ "local-fs.target" ];
+  # serviceConfig = {
+  #   Restart = "always";
+  #   Type = "simple";
+  #   StandardOutput = "journal";
+  #   StandardError = "journal";
+  #   # Optional:
+  #   # Device access may cause delays
+  #   # consider adding UDev rules instead of directly accessing input
+  # };
 
-      # };
-   # };
-
+  # };
+  # };
 
   # home-manager = {
   #   useGlobalPkgs = true;
@@ -494,7 +349,8 @@
   # };
   hydenix = {
     enable = true; # Enable Hydenix modules
-    sddm.enable = true;
+    sddm.enable = false;
+    boot.enable = false;
 
     # Basic System Settings (REQUIRED):
     hostname = "jonwick"; # REQUIRED: Set your computer's network name (change to something unique)

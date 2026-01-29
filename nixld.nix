@@ -5,8 +5,10 @@
 
   # Sets up all the libraries to load
   programs.nix-ld.libraries = with pkgs; [
-  cpplint
+    cpplint
     jdt-language-server
+    gcc
+    gcc-unwrapped
 
     openssl
     libxcrypt
@@ -25,7 +27,6 @@
     libgtkflow3
     gtk3
     cairo
-    gcc
     libxml2
     pango
     glib
@@ -57,7 +58,6 @@
     x11basic
     # xorg.xlibs
     #for cisco annyconenct
-    gcc
     glibc
     libglibutil
 
@@ -89,10 +89,10 @@
     xorg.libxkbfile
     libGL
 
-      glfw
+    glfw
 
-      # python313Packages.pyqt6
-      # python313Packages.pyqt6-webengine
+    # python313Packages.pyqt6
+    # python313Packages.pyqt6-webengine
 
     # ...
   ];

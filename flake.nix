@@ -9,23 +9,25 @@
   # };
 
   inputs = {
-  #   nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    # nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs.url = "nixpkgs/release-25.11";
+    minegrub-theme.url = "github:Lxtharia/minegrub-theme";
+
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # nixvim = {
-    #   url = "github:nix-community/nixvim";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
-    #
     nixvim = {
       url = "github:nix-community/nixvim";
-      # url = "/home/gaetan/perso/nix/nixvim/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # nixvim = {
+    #   url = "github:nix-community/nixvim";
+    #   # url = "/home/gaetan/perso/nix/nixvim/nixvim";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -57,82 +59,82 @@
 
   };
 
-#   outputs =
-#     inputs@{ nixpkgs, openconnect-sso, ... }:
-#     {
-#       # outputs = { nixpkgs, home-manager, hyprland,  ... }@inputs:
-#       # let
-#       #   system = "x86_64-linux";
-#       #   pkgs = import nixpkgs {
-#       #     inherit system;
-#       #     config = { allowUnfree = true; };
-#       #   };
-#       #   lib = nixpkgs.lib;
-#       # in
-#       #
-#       # {
-#       nixosConfigurations = {
-#         jonwick = nixpkgs.lib.nixosSystem {
-#           system = "x86_64-linux";
-#           modules = [
-#             {
-#               _module.args = { inherit inputs; };
-#             }
-#             # inputs.nixvim.homeManagerModules.nixvim
-#             inputs.home-manager.nixosModules.home-manager
-#             inputs.stylix.nixosModules.stylix
-#             inputs.pia.nixosModules."x86_64-linux".default
-#             ./configuration.nix
-#             # home-manager.nixosModules.home-manager
-#             # {
-#             #   home-manager.useGlobalPkgs = true;
-#             #   home-manager.useUserPackages = true;
-#               # inputs.home-manager.users.jonwick = customHome.homeManagerModules
-#
-#             # Optionally, use home-manager.extraSpecialArgs to pass
-#             # arguments to home.nix
-#             # }
-#           ];
-#         };
-#       };
-#
-#       #  nixosConfigurations = {
-#       #    jonwick = lib.nixosSystem {
-#       #      inherit system;
-#       #     specialArgs = { inherit inputs; }; # allows access to flake inputs in nixos modules
-#       #      modules = [
-#       #        ./configuration.nix
-#       #        # hyprland.homeManagerModules.default
-#       #        # {wayland.windowManager.hyprland.enable = true;}
-#       #        home-manager.nixosModules.home-manager
-#       #      ];
-#       #    };
-#       #
-#       # # Home Manager stuff
-#       #  homeManagerConfigurations = {
-#       #    hm = home-manager.lib.homeManagerConfiguration {
-#       #
-#       #      inherit system pkgs;
-#       #      username = "jonwick";
-#       #      homeDirectory = "/home/jonwick";
-#       #      configuration = {
-#       #        imports =[
-#       #          ];
-#       #        };
-#       #      };
-#       #    };
-#       #  };
-#     };
-# }
-# # outputs = { self, nixpkgs }: {
-# #
-# #   packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-# #
-# #   packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
-# #
-# # };
-# # }
-      outputs =
+  #   outputs =
+  #     inputs@{ nixpkgs, openconnect-sso, ... }:
+  #     {
+  #       # outputs = { nixpkgs, home-manager, hyprland,  ... }@inputs:
+  #       # let
+  #       #   system = "x86_64-linux";
+  #       #   pkgs = import nixpkgs {
+  #       #     inherit system;
+  #       #     config = { allowUnfree = true; };
+  #       #   };
+  #       #   lib = nixpkgs.lib;
+  #       # in
+  #       #
+  #       # {
+  #       nixosConfigurations = {
+  #         jonwick = nixpkgs.lib.nixosSystem {
+  #           system = "x86_64-linux";
+  #           modules = [
+  #             {
+  #               _module.args = { inherit inputs; };
+  #             }
+  #             # inputs.nixvim.homeManagerModules.nixvim
+  #             inputs.home-manager.nixosModules.home-manager
+  #             inputs.stylix.nixosModules.stylix
+  #             inputs.pia.nixosModules."x86_64-linux".default
+  #             ./configuration.nix
+  #             # home-manager.nixosModules.home-manager
+  #             # {
+  #             #   home-manager.useGlobalPkgs = true;
+  #             #   home-manager.useUserPackages = true;
+  #               # inputs.home-manager.users.jonwick = customHome.homeManagerModules
+  #
+  #             # Optionally, use home-manager.extraSpecialArgs to pass
+  #             # arguments to home.nix
+  #             # }
+  #           ];
+  #         };
+  #       };
+  #
+  #       #  nixosConfigurations = {
+  #       #    jonwick = lib.nixosSystem {
+  #       #      inherit system;
+  #       #     specialArgs = { inherit inputs; }; # allows access to flake inputs in nixos modules
+  #       #      modules = [
+  #       #        ./configuration.nix
+  #       #        # hyprland.homeManagerModules.default
+  #       #        # {wayland.windowManager.hyprland.enable = true;}
+  #       #        home-manager.nixosModules.home-manager
+  #       #      ];
+  #       #    };
+  #       #
+  #       # # Home Manager stuff
+  #       #  homeManagerConfigurations = {
+  #       #    hm = home-manager.lib.homeManagerConfiguration {
+  #       #
+  #       #      inherit system pkgs;
+  #       #      username = "jonwick";
+  #       #      homeDirectory = "/home/jonwick";
+  #       #      configuration = {
+  #       #        imports =[
+  #       #          ];
+  #       #        };
+  #       #      };
+  #       #    };
+  #       #  };
+  #     };
+  # }
+  # # outputs = { self, nixpkgs }: {
+  # #
+  # #   packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
+  # #
+  # #   packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
+  # #
+  # # };
+  # # }
+  outputs =
     { ... }@inputs:
     let
       jonwick = inputs.nixpkgs.lib.nixosSystem {
@@ -142,13 +144,20 @@
         };
         modules = [
           ./configuration.nix
+
+          (
+            { pkgs, ... }:
+            {
+              environment.systemPackages = [
+                inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
+
+              ];
+            }
+          )
         ];
       };
     in
     {
-      nixosConfigurations.hydenix = jonwick;
-      nixosConfigurations.default = jonwick;
       nixosConfigurations.jonwick = jonwick;
     };
 }
-
