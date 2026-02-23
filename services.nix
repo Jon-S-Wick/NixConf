@@ -5,22 +5,28 @@
   inputs,
   ...
 }:
-let
-  astronautPatched = pkgs.sddm-astronaut.overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
-      substituteInPlace $out/share/sddm/themes/sddm-astronaut-theme/metadata.desktop \
-        --replace "Themes/astronaut.conf" "Themes/pixel_sakura.conf"
-    '';
-  });
-in
 {
-  environment.systemPackages = with pkgs; [
-    astronautPatched
+  nixpkgs.overlays = [
+    (self: super: {
+      sddm-astronaut = super.sddm-astronaut.override {
+        embeddedTheme = "pixel_sakura"; # <- example
+      };
+    })
   ];
-
+  environment.systemPackages = with pkgs; [ sddm-astronaut ];
   services = {
     thermald.enable = true;
-    power-profiles-daemon.enable = lib.mkForce false;
+    supergfxd.enable = true;
+    libinput.enable = true;
+    blueman.enable = true;
+    upower.enable = true;
+    desktopManager.plasma6.enable = true;
+    teamviewer.enable = true;
+    asusd.enable = true;
+    power-profiles-daemon.enable = false;
+    flatpak.enable = true;
+    openssh.enable = true;
+
     tlp = {
       enable = true;
       settings = {
@@ -33,13 +39,10 @@ in
         CPU_MIN_PERF_ON_AC = 0;
         CPU_MAX_PERF_ON_AC = 90;
         CPU_MIN_PERF_ON_BAT = 0;
-        CPU_MAX_PERF_ON_BAT = 20;
+        CPU_MAX_PERF_ON_BAT = 15;
 
       };
     };
-    desktopManager.plasma6.enable = true;
-    teamviewer.enable = true;
-    asusd.enable = true;
     xserver = {
       enable = true;
       videoDrivers = [
@@ -48,14 +51,8 @@ in
       ];
 
     };
-    supergfxd.enable = true;
 
-    libinput.enable = true;
-    blueman.enable = true;
-    upower.enable = true;
-
-    pulseaudio.enable = false;
-    flatpak.enable = true;
+    # pulseaudio.enable = false;
     pipewire = {
       enable = true;
       alsa = {
@@ -64,6 +61,25 @@ in
       };
       pulse.enable = true;
       wireplumber.enable = true;
+      wireplumber.extraConfig = {
+        "90-hide-unplugged-hdmi" = {
+          "monitor.alsa.rules" = [
+            {
+              matches = [
+                {
+                  "media.class" = "Audio/Sink";
+                  "api.alsa.jack.connected" = false;
+                }
+              ];
+              actions = {
+                update-props = {
+                  "node.hidden" = true;
+                };
+              };
+            }
+          ];
+        };
+      };
       audio.enable = true;
       jack.enable = false;
     };
@@ -77,8 +93,6 @@ in
       enable = true;
       mountOnMedia = true;
     };
-
-    openssh.enable = true;
 
     displayManager = {
       sddm = {
@@ -94,8 +108,8 @@ in
           kdePackages.qtmultimedia
           kdePackages.sddm-kcm
           kdePackages.sddm
+          sddm-astronaut
 
-          astronautPatched
         ];
         theme = "sddm-astronaut-theme";
         settings = {
@@ -119,6 +133,11 @@ in
     };
     kanata = {
       enable = true;
+      # systemd.services.kanata-misc = {
+      #   wantedBy = [ "graphical-session.target" ];
+      #   after = [ "graphical-session.target" ];
+      # };
+
       keyboards = {
         "misc".config = ''
                     
@@ -139,19 +158,19 @@ in
     };
   };
   #Remove radeon from also settings
-  #     environment.etc."wireplumber/main.lua.d/60-disable-radeon-hda.lua".text = ''
-  #   rule = {
-  #     matches = {
-  #       {
-  #         { "device.name", "matches", "alsa_card.pci-0000_*_hda_radeon*" },
-  #       },
-  #     },
-  #     apply_properties = {
-  #       ["device.disabled"] = true,
-  #     },
-  #   }
-  #
-  #   table.insert(default_rules, rule)
-  # '';
+  environment.etc."wireplumber/main.lua.d/60-disable-radeon-hda.lua".text = ''
+    rule = {
+      matches = {
+        {
+          { "device.name", "matches", "alsa_card.pci-0000_*_hda_radeon*" },
+        },
+      },
+      apply_properties = {
+        ["device.disabled"] = true,
+      },
+    }
+
+    table.insert(default_rules, rule)
+  '';
 
 }
