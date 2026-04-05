@@ -10,103 +10,195 @@
   ...
 }:
 
-let
-  sddm-candy = pkgs.callPackage ./sources/sddm-candy.nix { };
-  sddm-corners = pkgs.callPackage ./sources/sddm-corners.nix { };
-in
 {
 
   imports = [
+    # inputs.hydenix.inputs.home-manager.nixosModules.home-manager
+    # inputs.hydenix.nixosModules.default
+    # ./modules/system # Your custom system modules
+    inputs.nixos-hardware.nixosModules.common-gpu-nvidia # NVIDIA
+    inputs.nixos-hardware.nixosModules.common-cpu-intel # Intel CPUs
+
+    inputs.nixos-hardware.nixosModules.common-pc-laptop # Laptops
+    inputs.nixos-hardware.nixosModules.common-pc-ssd # SSD storage
+    inputs.minegrub-theme.nixosModules.default
+    inputs.home-manager.nixosModules.home-manager
 
     ./hardware-configuration.nix
     ./nixld.nix
 
-    # ./home/home-manager.nix
-    ./themes/stylix/pinky.nix
-    # ./shell.nix
+    # ./themes/stylix/pinky.nix
+    ./services.nix
+    ./pkgs.nix
+    # ./var.nix
 
-    # ./python.nix
-    # ./hosts/desktop
-    # ./packages
-    # ./home/home.nix
-    # ./nvidia.nix
-    ./var.nix
-
-    # ./devenv.nix
   ];
 
   # Bootloader.
+  nixpkgs.config.allowUnfree = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_zen;
   boot = {
-    initrd = {
-      kernelModules = [ "nvidia" ];
-    };
-    extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
-  };
+    loader = {
+      systemd-boot.enable = false;
+      efi = {
+        canTouchEfiVariables = true;
+        efiSysMountPoint = "/boot/efi"; # ← use the same mount point here.
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+      };
+      grub = {
+        enable = true;
+        efiSupport = true;
+        device = "nodev";
+        useOSProber = true;
+
+        # copyKernels = false;
+        # device = "/dev/nvme0n1p1";
+
+        minegrub-theme = {
+          enable = true;
+          splash = "100% Flakes!";
+          background = "background_options/1.8  - [Classic Minecraft].png";
+          boot-options-count = 4;
+        };
+      };
+    };
+    #       consoleLogLevel = 3;
+    #
+    # kernelPackages = pkgs.linuxPackages_zen;
+    kernelPackages = pkgs.linuxPackages_latest;
+    #   initrd = {
+    #     kernelModules = [ "nvidia" ];
+    #   };
+    kernelModules = [
+      "nvidia"
+      # "asus_wmi"
+    ];
+    kernelParams = [
+      "nvidia-drm.modeset=1"
+      "quiet"
+      "splash"
+      "boot.shell_on_fail"
+      "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+      "nvidia-drm.fbdev=1"
+      "drm_kms_helper.poll=0"
+
+      "nvidia.NVreg_TemporaryFilePath=/var/tmp"
+      "rd.systemd.show_status=false"
+      "rd.udev.log_level=3"
+      "vt.global_cursor_default=0"
+      "mem_sleep_default=deep"
+      "nvidia.NVreg_EnableGpuFirmware=0"
+    ];
+    #   # extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
+    # loader.systemd-boot.enable = true;
+    # loader.efi.canTouchEfiVariables = true;
+    plymouth = {
+      enable = true;
+      theme = "lone";
+      themePackages = with pkgs; [
+        # By default we would install all themes
+        (adi1090x-plymouth-themes.override {
+          selected_themes = [ "lone" ];
+        })
+      ];
+    };
+  };
+  systemd.sleep.extraConfig = ''
+    SuspendMode=deep
+  '';
+
+  #  swapDevices = [ {
+  #     device = "/var/lib/swapfile";
+  #     size = 32*1024;
+  #   } ];
+  # zramSwap = {
+  #   enable = true;
+  #   algorithm = "lz4"; # You can choose other algorithms like zstd if preferred
+  #   memoryPercent = 10; # Adjust this based on your RAM size
+  # };
   #
+  powerManagement.enable = true;
   hardware = {
+    enableRedistributableFirmware = true;
     graphics = {
       enable = true;
       enable32Bit = true;
-      # driSupport = true;
-      # driSupport32Bit = true;
+      extraPackages = with pkgs; [
+        nvidia-vaapi-driver
+        libva-vdpau-driver
+        libvdpau-va-gl
+        mesa
+        egl-wayland
+      ];
     };
-
+    pulseaudio.enable = false;
+    pulseaudio.extraConfig = "unload-module module-suspend-on-idle";
     nvidia = {
       modesetting.enable = true;
-      open = true;
+      open = false;
       nvidiaSettings = true;
-      package = config.boot.kernelPackages.nvidiaPackages.beta;
-      # forceFullCompositionPipeline = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
       powerManagement.enable = true;
-      # prime = {
-      #   nvidiaBusId = "PCI:1:0:0";
-      #   amdgpuBusId = "PCI:101:0:0";
-      #
-      # };
+      powerManagement.finegrained = true;
+      prime = {
+        offload.enable = true;
+        # enableoOffloadCmd = true;
+        amdgpuBusId = "PCI:64:0:0";
+        nvidiaBusId = "PCI:1:0:0";
+      };
+
+      dynamicBoost.enable = true;
     };
-    # opengl.enable = true;
-    #
-    #
-
+    bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
   };
-
-  services.xserver.videoDrivers = [ "nvidia" ];
-  systemd.network.wait-online.enable = false;
-  # home-manager.users.jonwick = { imports = [ ./home/home.nix ]; };
-
-  # hardware.pulseaudio.enable = false; # Use Pipewire, the modern sound subsystem
-
-  security.rtkit.enable = true; # Enable RealtimeKit for audio purposes
-
-  #sound.enable = true;
-  # services.pipewire = {
-  #   enable = true;
-  #   alsa.enable = true;
-  #   alsa.support32Bit = true;
-  #   pulse.enable = true;
-  # };
-
   #
-  # Bluetooth
-  #
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = true;
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
+      ACTION=="add" SUBSYSTEM=="pci" ATTR{vendor}=="0x1022" ATTR{device}=="0x1483" ATTR{power/wakeup}="disabled"
+
+  '';
+
+  security = {
+    rtkit.enable = true; # Enable RealtimeKit for audio purposes
+    polkit.enable = true;
+    # pam.howdy.enable = true;
+
   };
 
   virtualisation.docker.enable = true;
+  virtualisation.libvirtd.enable = true;
+  systemd = {
+    services.docker = {
+      after = [ "network.target" ];
+      wants = [ "network.target" ];
+    };
+    network.wait-online.enable = false;
+
+    services.kanata-misc = {
+      wantedBy = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+    };
+  };
 
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
 
-  networking.hostName = "nixos"; # Define your hostname.
+  networking = {
+    hostName = lib.mkForce "nixos"; # Define your hostname.
+
+    networkmanager = {
+      enable = true;
+      plugins = with pkgs; [
+        networkmanager-openconnect
+      ];
+
+    };
+  };
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -114,8 +206,8 @@ in
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
-  networking.networkmanager.enable = true;
-  networking.wireless.iwd.enable = true;
+  # networking.networkmanager.enable = true;
+  # networking.wireless.iwd.enable = true;
   # networking.networkmanager.dns = "none";
   #   networking.useDHCP = false;
   # networking.dhcpcd.enable = false;
@@ -136,8 +228,8 @@ in
   time.timeZone = "America/Los_Angeles";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
+  # i18n.defaultLocale = "en_US.UTF-8";
+  #
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_US.UTF-8";
     LC_IDENTIFICATION = "en_US.UTF-8";
@@ -156,7 +248,7 @@ in
   #   variant = "";
   #   #videoDrivers = ["nvidia"];
   # };
-
+  # hardware.videoDrivers = [ "uvcvideo" ];
   # Define a user account. Don't forget to set a password with ‘passwd’.
   #
   users.users.jonwick = {
@@ -166,165 +258,50 @@ in
       "docker"
       "networkmanager"
       "wheel"
+      "libvirtd"
+      "kvm"
     ];
-    packages = with pkgs; [ ];
   };
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-kde ];
+    wlr.enable = true;
+    config = {
+      common.default = [ "gtk" ];
+      hyprland.default = [
+        "gtk"
+        "hyprland"
+      ];
+    };
+
+    extraPortals = [
+      pkgs.kdePackages.xdg-desktop-portal-kde
+      pkgs.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal
+      pkgs.xdg-desktop-portal-gtk
+    ];
     configPackages = [ pkgs.gsettings-desktop-schemas ];
   };
-  services.flatpak.enable = true;
-  nixpkgs.config.allowUnfree = true;
-  environment.systemPackages = with pkgs; [
-    jdk23
-    java-language-server
+  #   # nixpkgs.config.allowUnfree = true;
+  #
+  environment = {
+    #
+    #     variables = {
+    #
+    #         LD_LIBRARY_PATH = "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
+    #         };
 
-    flatpak
-    gradle_8
-    xdg-desktop-portal
-    xdg-desktop-portal-gtk
-    xdg-desktop-portal-kde
-
-    R
-    pipx
-    connman
-    nix-ld
-    distrobox
-
-    iwgtk
-
-    sddm-candy
-    sddm-corners
-    libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
-    libsForQt5.layer-shell-qt # for sddm theme wayland support
-    libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
-    libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
-    libsForQt5.qtsvg # for sddm theme svg icons
-    libsForQt5.qt5.qtwayland # wayland support for qt5
-    # libsForQt5.xwaylandvideobridge
-    #cli tools
-    neovim
-    zip
-    android-tools
-    protonvpn-cli
-    protonvpn-gui
-    unzip
-    flutter
-    wine
-    steam-run
-    gnome-disk-utility
-
-    zig
-    kanata
-    # zsh
-    tmux
-    git
-    #apps
-    kitty
-    discord
-    vivaldi
-    firefox
-    obsidian
-    teams-for-linux
-    thunderbird
-    gparted
-    steam
-    konsole
-    # Hyprland and utils
-    waybar
-    yazi
-    alsa-utils
-    kdePackages.okular
-    kdePackages.systemsettings
-    wl-clipboard
-    #hyprland-protocols
-    hyprland
-    xdg-desktop-portal-hyprland
-    xdg-desktop-portal-gnome
-    xwayland
-    wofi
-    #xdg-utils
-    xdg-desktop-portal-gtk
-    qt5.qtwayland
-    qt6.qmake
-    qt6.qtwayland
-    # xfce.thunar
-    thefuck
-
-    pipewire
-    pulseaudio
-
-    home-manager
-    libreoffice
-    asusctl
-
-    pavucontrol
-
-    #Compilers
-    libgcc
-    gcc
-    jdk
-    ags
-    #jdk22
-    python3
-    # openssl
-    openssl_1_1
-    zstd
-    python312Packages.zstd
-    python313Packages.pybigwig
-    gnumake
-
-    gh
-
-    gtk4
-    gsettings-desktop-schemas
-
-    glib
-    glibc
-    boost
-    libxml2
-    libglibutil
-    samtools
-    wget
-    intltool
-    libpng
-    mariadb
-
-    connmanFull
-
-    # connman-gtk
-    networkmanagerapplet
-    networkmanager_dmenu
-    kdePackages.plasma-nm
-    kdePackages.networkmanager-qt
-
-    lshw
-    lshw-gui
-
-    conda
-    fish
-    zsh
-    perl
-    zlib
-
-    xorg.libSM
-    xorg.libICE
-    xorg.libXrender
-    libselinux
-
-    libxcrypt
-    # libxcrypt-legacy
-  ];
-
-  environment.variables = {
-
-    LD_LIBRARY_PATH = "${pkgs.gcc}/lib:/nix/store/kvrhj41ziwxpaz10fql4xypqzvfq3yp7-system-path/lib:$LD_LIBRARY_PATH";
-
+    sessionVariables = {
+      MOZ_ENABLE_WAYLAND = "1";
+      NIXOS_OZONE_WL = "1";
+      T_QPA_PLATFORM = "wayland";
+      GDK_BACKEND = "wayland";
+      WLR_NO_HARDWARE_CURSORS = "1";
+    };
   };
-  nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1w" ];
 
-  virtualisation.vmware.host.enable = true;
+  # nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1w" ];
+
+  # virtualisation.vmware.host.enable = true;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -338,117 +315,93 @@ in
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
-  services = {
-    # desktopManager.plasma6.enable = true;
+  # programs.dconf.enable = true;
+  #   programs.xwayland.enable = true;
+  #   programs.hyprland.xwayland.enable = true;
+  #
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
+  #
+  #
+  #
+  #
+  #   systemd = {
+  #     network.wait-online.enable = false;
+  #     services = {
+  #         kanata = {
+  #       description = "Kanata Keyboard Remapper";
+  #       wantedBy = [ "multi-user.target" ];
+  #       after = [ "local-fs.target" ];
+  #       serviceConfig = {
+  #         ExecStart = "${pkgs.kanata} --cfg /home/jonwick/.k";
+  #         Restart = "always";
+  #         Type = "simple";
+  #         StandardOutput = "journal";
+  #         StandardError = "journal";
+  #         # Optional:
+  #         # Device access may cause delays
+  #         # consider adding UDev rules instead of directly accessing input
+  #       };
+  #     };
+  #   };
+  # armory-crate = {
+  #         description = "Asus crate on startup";
+  #
+  #   wantedBy = [ "multi-user.target" ];
+  #   after = [ "local-fs.target" ];
+  #   serviceConfig = {
+  #     ExecStart = "${pkgs.rog}";
+  #     Restart = "always";
+  #     Type = "simple";
+  #     StandardOutput = "journal";
+  #     StandardError = "journal";
+  #     # Optional:
+  #     # Device access may cause delays
+  #     # consider adding UDev rules instead of directly accessing input
+  #   };
+  # };
+  #
+  #   thunderbird = {
+  #      description = "Thunderbird background init";
+  #      script = "thunderbird --headless";
+  # after = [ "local-fs.target" ];
+  # serviceConfig = {
+  #   Restart = "always";
+  #   Type = "simple";
+  #   StandardOutput = "journal";
+  #   StandardError = "journal";
+  #   # Optional:
+  #   # Device access may cause delays
+  #   # consider adding UDev rules instead of directly accessing input
+  # };
+  #   };
+  #   teams = {
+  #      description = "Teams headless";
+  #      script = "teams-for-linux --minimized true  ";
+  # after = [ "local-fs.target" ];
+  # serviceConfig = {
+  #   Restart = "always";
+  #   Type = "simple";
+  #   StandardOutput = "journal";
+  #   StandardError = "journal";
+  #   # Optional:
+  #   # Device access may cause delays
+  #   # consider adding UDev rules instead of directly accessing input
+  # };
 
-    libinput.enable = true;
-    blueman.enable = true;
-    pipewire = {
-      enable = true;
-      alsa = {
-        enable = true;
-        support32Bit = true;
-      };
-      pulse.enable = true;
-      wireplumber.enable = true;
-    };
-
-    dbus.enable = true;
-    udisks2 = {
-      enable = true;
-      mountOnMedia = true;
-    };
-
-    openssh.enable = true;
-
-    displayManager = {
-      sddm = {
-        enable = true;
-        wayland = {
-          enable = true;
-          compositor = "kwin";
-        };
-        # package = pkgs.libsForQt5.sddm;
-        # extraPackages = with pkgs; [
-        #   # sddm-sugar-dark
-        #   sddm-candy
-        #   sddm-corners
-        #   libsForQt5.qt5.qtquickcontrols # for sddm theme ui elements
-        #   libsForQt5.layer-shell-qt # for sddm theme wayland support
-        #   libsForQt5.qt5.qtquickcontrols2 # for sddm theme ui elements
-        #   libsForQt5.qt5.qtgraphicaleffects # for sddm theme effects
-        #   libsForQt5.qtsvg # for sddm theme svg icons
-        # libsForQt5.qt5.qtwayland # wayland support for qt5
-        #   # bibata-cursors
-        #   # Bibata-Modern-Ice
-        # ];
-        # theme = "Candy";
-        # settings = {
-        #   General = {
-        #     GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
-        #   };
-        #   Theme = {
-        #     ThemeDir = "/run/current-system/sw/share/sddm/themes";
-        #     CursorTheme = "bibata-cursors";
-        #   };
-        # };
-      };
-      sessionPackages = [ pkgs.hyprland ];
-    };
-
-    upower.enable = true;
-
-  };
-  programs.nix-ld.enable = true;
-  programs.dconf.enable = true;
-
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
-
-  services.kanata = {
-    enable = true;
-    keyboards = {
-      "misc".config = ''
-                  
-        (defsrc
-          caps
-        )
-
-        (defalias
-          escctrl  (tap-hold 100 100 esc lmet)
-
-        )
-
-        (deflayer base
-          @escctrl
-        )
-      '';
-    };
-  };
-
-  systemd.services.kanata = {
-    description = "Kanata Keyboard Remapper";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "local-fs.target" ];
-    serviceConfig = {
-      ExecStart = "/path/to/kanata --cfg /path/to/config.kbd";
-      Restart = "always";
-      Type = "simple";
-      StandardOutput = "journal";
-      StandardError = "journal";
-      # Optional:
-      # Device access may cause delays
-      # consider adding UDev rules instead of directly accessing input
-    };
-  };
+  # };
+  # };
 
   home-manager = {
+
     useGlobalPkgs = true;
     useUserPackages = true;
-    backupFileExtension = "hm-backup";
+    extraSpecialArgs = { inherit inputs; };
   };
+
+  # home-manager.users.jonwick = inputs.customHome.homeConfigurations."jonwick";
 
   # programs.conda.package = pkgs.conda.override {
   #   extraLibraries = pkgs:  ++ extraPackages;
@@ -466,5 +419,5 @@ in
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.05"; # Did you read the comment?
+  system.stateVersion = "25.05"; # Did you read the comment?
 }
