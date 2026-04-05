@@ -16,7 +16,7 @@
     # inputs.hydenix.inputs.home-manager.nixosModules.home-manager
     # inputs.hydenix.nixosModules.default
     # ./modules/system # Your custom system modules
-    # inputs.nixos-hardware.nixosModules.common-gpu-nvidia # NVIDIA
+    inputs.nixos-hardware.nixosModules.common-gpu-nvidia # NVIDIA
     inputs.nixos-hardware.nixosModules.common-cpu-intel # Intel CPUs
 
     inputs.nixos-hardware.nixosModules.common-pc-laptop # Laptops
@@ -25,7 +25,7 @@
     inputs.home-manager.nixosModules.home-manager
 
     ./hardware-configuration.nix
-    # ./nixld.nix
+    ./nixld.nix
 
     # ./themes/stylix/pinky.nix
     ./services.nix
@@ -33,6 +33,7 @@
     # ./var.nix
 
   ];
+
   # Bootloader.
   nixpkgs.config.allowUnfree = true;
 
@@ -63,7 +64,8 @@
     };
     #       consoleLogLevel = 3;
     #
-    kernelPackages = pkgs.linuxPackages_zen;
+    # kernelPackages = pkgs.linuxPackages_zen;
+    kernelPackages = pkgs.linuxPackages_latest;
     #   initrd = {
     #     kernelModules = [ "nvidia" ];
     #   };
@@ -77,13 +79,15 @@
       "splash"
       "boot.shell_on_fail"
       "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+      "nvidia-drm.fbdev=1"
+      "drm_kms_helper.poll=0"
+
       "nvidia.NVreg_TemporaryFilePath=/var/tmp"
       "rd.systemd.show_status=false"
       "rd.udev.log_level=3"
       "vt.global_cursor_default=0"
-      "nvidia.NVreg_RegistryDwords=EnableMSI=0"
-      "nouveau.modeset=0"
       "mem_sleep_default=deep"
+      "nvidia.NVreg_EnableGpuFirmware=0"
     ];
     #   # extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
     # loader.systemd-boot.enable = true;
@@ -99,6 +103,9 @@
       ];
     };
   };
+  systemd.sleep.extraConfig = ''
+    SuspendMode=deep
+  '';
 
   #  swapDevices = [ {
   #     device = "/var/lib/swapfile";
@@ -116,10 +123,16 @@
     graphics = {
       enable = true;
       enable32Bit = true;
+      extraPackages = with pkgs; [
+        nvidia-vaapi-driver
+        libva-vdpau-driver
+        libvdpau-va-gl
+        mesa
+        egl-wayland
+      ];
     };
     pulseaudio.enable = false;
     pulseaudio.extraConfig = "unload-module module-suspend-on-idle";
-
     nvidia = {
       modesetting.enable = true;
       open = false;
@@ -142,10 +155,16 @@
     };
   };
   #
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
+      ACTION=="add" SUBSYSTEM=="pci" ATTR{vendor}=="0x1022" ATTR{device}=="0x1483" ATTR{power/wakeup}="disabled"
+
+  '';
 
   security = {
     rtkit.enable = true; # Enable RealtimeKit for audio purposes
     polkit.enable = true;
+    # pam.howdy.enable = true;
 
   };
 
@@ -229,7 +248,7 @@
   #   variant = "";
   #   #videoDrivers = ["nvidia"];
   # };
-
+  # hardware.videoDrivers = [ "uvcvideo" ];
   # Define a user account. Don't forget to set a password with ‘passwd’.
   #
   users.users.jonwick = {

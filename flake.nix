@@ -9,8 +9,8 @@
   # };
 
   inputs = {
-    # nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    nixpkgs.url = "nixpkgs/release-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    # nixpkgs.url = "nixpkgs/release-25.11";
     # custom-sddm.url = "github:/Jon-S-Wick/sddm-astronaut-theme";
     minegrub-theme.url = "github:Lxtharia/minegrub-theme";
 

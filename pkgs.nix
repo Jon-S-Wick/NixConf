@@ -8,7 +8,32 @@
 
   ];
   environment.systemPackages = with pkgs; [
+    gparted-full
+    bitwarden-cli
+    libglut
+    kdePackages.kmail
+    kdePackages.kontact
+    kdePackages.mailcommon
+    kdePackages.kmail-account-wizard
+    kdePackages.mbox-importer
+    kdePackages.mailimporter
+    kdePackages.akonadi-import-wizard
+
+    steam
+    dpkg
+    nix-ld
+    wine64
+    winetricks
+    wine-wayland
+    libgccjit
     home-manager
+    alsa-ucm-conf
+    alsa-utils
+    helvum
+    qpwgraph
+    pipewire
+    wireplumber
+
     btop
     btop-cuda
     nvtopPackages.full
@@ -70,6 +95,8 @@
     libinput # libinput library
     lm_sensors # system sensors
     pciutils # pci utils
+    kdePackages.kpmcore
+    nextdns
 
   ];
   programs = {
@@ -79,6 +106,7 @@
     dconf.enable = true;
     xwayland.enable = true;
     virt-manager.enable = true;
+    partition-manager.enable = true;
     # polkit-kde-agent.enable = true;
   };
 }

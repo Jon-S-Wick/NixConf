@@ -15,6 +15,9 @@
   ];
   environment.systemPackages = with pkgs; [ sddm-astronaut ];
   services = {
+    # howdy.enable = true;
+    linux-enable-ir-emitter.enable = true;
+    nextdns.enable = true;
     thermald.enable = true;
     supergfxd.enable = true;
     libinput.enable = true;
@@ -23,25 +26,25 @@
     desktopManager.plasma6.enable = true;
     teamviewer.enable = true;
     asusd.enable = true;
-    power-profiles-daemon.enable = false;
+    # power-profiles-daemon.enable = false;
     flatpak.enable = true;
     openssh.enable = true;
 
     tlp = {
-      enable = true;
-      settings = {
-        CPU_SCALING_GOVERNOR_ON_AC = "performance";
-        CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
-
-        CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
-        CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
-
-        CPU_MIN_PERF_ON_AC = 0;
-        CPU_MAX_PERF_ON_AC = 90;
-        CPU_MIN_PERF_ON_BAT = 0;
-        CPU_MAX_PERF_ON_BAT = 15;
-
-      };
+      enable = false;
+      # settings = {
+      #   CPU_SCALING_GOVERNOR_ON_AC = "performance";
+      #   CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+      #
+      #   CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+      #   CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+      #
+      #   CPU_MIN_PERF_ON_AC = 0;
+      #   CPU_MAX_PERF_ON_AC = 90;
+      #   CPU_MIN_PERF_ON_BAT = 0;
+      #   CPU_MAX_PERF_ON_BAT = 15;
+      #
+      # };
     };
     xserver = {
       enable = true;
@@ -61,27 +64,16 @@
       };
       pulse.enable = true;
       wireplumber.enable = true;
-      wireplumber.extraConfig = {
-        "90-hide-unplugged-hdmi" = {
-          "monitor.alsa.rules" = [
-            {
-              matches = [
-                {
-                  "media.class" = "Audio/Sink";
-                  "api.alsa.jack.connected" = false;
-                }
-              ];
-              actions = {
-                update-props = {
-                  "node.hidden" = true;
-                };
-              };
-            }
-          ];
-        };
-      };
       audio.enable = true;
       jack.enable = false;
+      extraConfig.pipewire."10-low-latency" = {
+        "context.properties" = {
+          "default.clock.rate" = 48000;
+          "default.clock.quantum" = 256;
+          "default.clock.min-quantum" = 256;
+          "default.clock.max-quantum" = 256;
+        };
+      };
     };
 
     dbus = {
@@ -118,15 +110,6 @@
             CurrentPreset = "Sakura";
           };
         };
-        # theme = "Candy";
-        # settings = {
-        #   General = {
-        #     GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
-        #   };
-        #   Theme = {
-        #     CursorTheme = "bibata-cursors";
-        #   };
-        # };
       };
       sessionPackages = [ pkgs.hyprland ];
 
